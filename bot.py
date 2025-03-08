@@ -5,11 +5,8 @@ import os
 import json
 import logging
 from linebot import LineBotApi, WebhookHandler
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 from linebot.exceptions import InvalidSignatureError
-
-# Konfigurasi Logging
-logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -43,40 +40,47 @@ def callback():
     signature = request.headers.get("X-Line-Signature", "")
     body = request.get_data(as_text=True)
 
-    logging.info("Menerima request dari LINE")
-    logging.info(f"Request Body: {body}")
-
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        logging.error("Invalid Signature!")
         return "Invalid signature", 400
 
     return "OK", 200
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    user_text = event.message.text
+    user_text = event.message.text.strip()
     user_id = event.source.user_id
-
-    logging.info(f"Pesan diterima dari {user_id}: {user_text}")
-
-    # Periksa apakah Google Sheet memiliki header
-    existing_data = sheet.get_all_records()
-    if len(existing_data) == 0:
-        logging.info("Sheet kosong, menambahkan header...")
-        sheet.append_row(["User ID", "Message"])
+    
+    if user_text.lower() == "!jadwal":
         existing_data = sheet.get_all_records()
-
-    # Periksa apakah pesan sudah ada
-    for row in existing_data:
-        if row["User ID"] == user_id and row["Message"] == user_text:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Pesan sudah tercatat!"))
+        booked_slots = {row["Jadwal"] for row in existing_data if "Jadwal" in row}
+        
+        all_slots = [f"{hour}:00" for hour in range(7, 23, 3)]
+        available_slots = [slot for slot in all_slots if slot not in booked_slots]
+        
+        if not available_slots:
+            reply_text = "Semua jadwal sudah terisi."
+        else:
+            buttons = [QuickReplyButton(action=MessageAction(label=slot, text=f"Pilih {slot}")) for slot in available_slots]
+            reply_text = "Silakan pilih jadwal yang tersedia:"
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text, quick_reply=QuickReply(items=buttons)))
             return
-
-    # Simpan ke Google Sheets
-    sheet.append_row([user_id, user_text])
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Pesan disimpan!"))
+    
+    elif user_text.startswith("Pilih "):
+        selected_time = user_text.replace("Pilih ", "").strip()
+        existing_data = sheet.get_all_records()
+        booked_slots = {row["Jadwal"] for row in existing_data if "Jadwal" in row}
+        
+        if selected_time in booked_slots:
+            reply_text = "Jadwal sudah terisi, silakan pilih waktu lain."
+        else:
+            sheet.append_row([user_id, selected_time])
+            reply_text = f"Jadwal {selected_time} berhasil dipesan!"
+    else:
+        reply_text = "Ketik !jadwal untuk melihat jadwal yang tersedia."
+    
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
