@@ -2,55 +2,51 @@ from flask import Flask, request, jsonify
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-import json
-import requests
+from linebot import LineBotApi, WebhookHandler
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.exceptions import InvalidSignatureError
 
 app = Flask(__name__)
 
+# Load konfigurasi
+from config import LINE_ACCESS_TOKEN, SPREADSHEET_ID
+
 # Konfigurasi Google Sheets
-SHEET_NAME = "auto_message"
-SCOPES = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-
-# Load kredensial Google Sheets dari file JSON
-cred_json = json.loads(os.getenv("GOOGLE_SHEETS_CREDENTIALS"))
-creds = ServiceAccountCredentials.from_json_keyfile_dict(cred_json, SCOPES)
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
 client = gspread.authorize(creds)
-sheet = client.open(SHEET_NAME).sheet1
+sheet = client.open_by_key(SPREADSHEET_ID).sheet1
 
-# Token akses LINE
-LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
+# Konfigurasi LINE API
+line_bot_api = LineBotApi(LINE_ACCESS_TOKEN)
+handler = WebhookHandler("YOUR_CHANNEL_SECRET")
 
 @app.route("/callback", methods=["POST"])
 def callback():
-    body = request.get_json()
-    events = body.get("events", [])
-    
-    for event in events:
-        if event.get("type") == "message" and "text" in event["message"]:
-            user_id = event["source"]["userId"]
-            message_text = event["message"]["text"]
-            
-            # Simpan ke Google Sheets
-            sheet.append_row([user_id, message_text])
-            
-            # Kirim balasan
-            reply_message(event["replyToken"], "Pesan Anda telah disimpan!")
-    
-    return jsonify({"status": "success"})
+    signature = request.headers["X-Line-Signature"]
+    body = request.get_data(as_text=True)
 
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        return "Invalid signature", 400
 
-def reply_message(reply_token, text):
-    url = "https://api.line.me/v2/bot/message/reply"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"
-    }
-    data = {
-        "replyToken": reply_token,
-        "messages": [{"type": "text", "text": text}]
-    }
-    requests.post(url, headers=headers, json=data)
+    return "OK", 200
+
+@handler.add(MessageEvent, message=TextMessage)
+def handle_text_message(event):
+    user_text = event.message.text
+    user_id = event.source.user_id
+
+    # Simpan ke Google Sheets jika belum ada di hari yang sama
+    existing_data = sheet.get_all_records()
+    for row in existing_data:
+        if row["User ID"] == user_id and row["Message"] == user_text:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Pesan sudah tercatat!"))
+            return
+
+    sheet.append_row([user_id, user_text])
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Pesan disimpan!"))
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
