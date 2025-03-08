@@ -1,1 +1,4 @@
-pip install -r requirements.txt
+Flask
+gspread
+oauth2client
+line-bot-sdk
