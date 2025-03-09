@@ -73,7 +73,7 @@ def get_available_slots():
     logging.info(f"🕒 Jadwal yang sudah dipesan: {booked_slots}")
 
     available_slots = []
-    for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, 13:00, ..., 22:00)
+    for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, ..., 22:00)
         time_slot = f"{hour:02}:00"
         if time_slot not in booked_slots:
             available_slots.append(time_slot)
@@ -132,35 +132,27 @@ def handle_text_message(event):
         selected_time = parts[1]
         broadcast_text = parts[2] if len(parts) > 2 else "(Tanpa Pesan)"
 
-            available_slots = get_available_slots()
+        available_slots = get_available_slots()
+        if selected_time not in available_slots:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Jadwal tidak valid atau sudah diambil."))
+            return
 
-            if selected_time not in available_slots:
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Jadwal tidak valid atau sudah diambil."))
-                return
+        now_jakarta = datetime.now(jakarta_tz)
+        date_today = now_jakarta.strftime("%Y-%m-%d")
+        selected_datetime = jakarta_tz.localize(datetime.strptime(f"{date_today} {selected_time}", "%Y-%m-%d %H:%M"))
+        start_time = selected_datetime.isoformat()
+        end_time = (selected_datetime + timedelta(hours=1)).isoformat()
 
-            now_jakarta = datetime.now(jakarta_tz)
-            date_today = now_jakarta.strftime("%Y-%m-%d")
+        event_body = {
+            "summary": f"Booking oleh {user_id}",
+            "start": {"dateTime": start_time, "timeZone": "Asia/Jakarta"},
+            "end": {"dateTime": end_time, "timeZone": "Asia/Jakarta"}
+        }
 
-            selected_datetime = jakarta_tz.localize(datetime.strptime(f"{date_today} {selected_time}", "%Y-%m-%d %H:%M"))
-            start_time = selected_datetime.isoformat()
-            end_time = (selected_datetime + timedelta(hours=1)).isoformat()
+        calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event_body).execute()
+        sheet.append_row([user_id, selected_time, broadcast_text])
 
-            event_body = {
-                "summary": f"Booking oleh {user_id}",
-                "start": {"dateTime": start_time, "timeZone": "Asia/Jakarta"},
-                "end": {"dateTime": end_time, "timeZone": "Asia/Jakarta"}
-            }
-
-            calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event_body).execute()
-            sheet.append_row([user_id, selected_time, broadcast_text])
-
-            line_bot_api.reply_message(
-                event.reply_token, 
-                TextSendMessage(text=f"Jadwal {selected_time} telah dipesan dengan pesan: {broadcast_text}")
-            )
-        except Exception as e:
-            logging.error(f"Error: {e}")
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Format salah. Gunakan: Pilih <jam> <pesan broadcast>."))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"Jadwal {selected_time} telah dipesan dengan pesan: {broadcast_text}"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
