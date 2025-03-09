@@ -124,12 +124,14 @@ def handle_text_message(event):
         line_bot_api.reply_message(event.reply_token, reply_message)
 
     elif user_text.lower().startswith("pilih"):
-        try:
-            parts = user_text.split(" ", 2)
-            if len(parts) < 3:
-                raise ValueError("Format salah")
-            selected_time = parts[1]
-            broadcast_text = parts[2]
+        parts = user_text.split(" ", 2)
+        if len(parts) < 2:
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Format salah. Gunakan: Pilih <jam> <pesan broadcast>."))
+            return
+
+        selected_time = parts[1]
+        broadcast_text = parts[2] if len(parts) > 2 else "(Tanpa Pesan)"
+
             available_slots = get_available_slots()
 
             if selected_time not in available_slots:
