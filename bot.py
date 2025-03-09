@@ -1,6 +1,6 @@
 from flask import Flask, request
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 import os
 import json
 import logging
@@ -10,9 +10,10 @@ from linebot.exceptions import InvalidSignatureError
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 import pytz
+import sys
 
 # Konfigurasi Logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -24,31 +25,33 @@ GOOGLE_CREDENTIALS = os.getenv("GOOGLE_CREDENTIALS")
 GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID")
 
 if not all([LINE_ACCESS_TOKEN, LINE_CHANNEL_SECRET, SPREADSHEET_ID, GOOGLE_CREDENTIALS, GOOGLE_CALENDAR_ID]):
-    raise ValueError("Environment variables tidak lengkap! Periksa kembali konfigurasi di Koyeb.")
+    raise ValueError("❌ Environment variables tidak lengkap! Periksa kembali konfigurasi di Koyeb.")
 
 # Konfigurasi Google Sheets
 try:
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds_json = json.loads(GOOGLE_CREDENTIALS)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
+    creds = Credentials.from_service_account_info(creds_json, scopes=[
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/calendar"
+    ])
     client = gspread.authorize(creds)
     sheet = client.open_by_key(SPREADSHEET_ID).sheet1
-    logging.info("Terhubung ke Google Sheets.")
+    logging.info("✅ Terhubung ke Google Sheets.")
 except Exception as e:
-    logging.error(f"Error Google Sheets: {e}")
+    logging.error(f"❌ Error Google Sheets: {e}")
     raise
 
 # Konfigurasi Google Calendar
 try:
     calendar_service = build("calendar", "v3", credentials=creds)
-    logging.info("Terhubung ke Google Calendar.")
+    logging.info("✅ Terhubung ke Google Calendar.")
 except Exception as e:
-    logging.error(f"Error Google Calendar: {e}")
+    logging.error(f"❌ Error Google Calendar: {e}")
     raise
 
 # Zona waktu Jakarta
 jakarta_tz = pytz.timezone("Asia/Jakarta")
-
 
 def get_available_slots():
     now = datetime.now(jakarta_tz).isoformat()
@@ -59,42 +62,38 @@ def get_available_slots():
         ).execute()
         events = events_result.get('items', [])
     except Exception as e:
-        logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
+        logging.error(f"❌ Error mendapatkan jadwal dari Google Calendar: {e}")
         return []
 
     booked_slots = {event['start']['dateTime'][11:16] for event in events if 'dateTime' in event['start']}
 
     available_slots = []
-    for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, 13:00, ..., 22:00)
+    for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, ..., 22:00)
         time_slot = f"{hour:02}:00"
         if time_slot not in booked_slots:
             available_slots.append(time_slot)
 
     return available_slots
 
-
 # Konfigurasi LINE API
 line_bot_api = LineBotApi(LINE_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
-
 
 @app.route("/")
 def home():
     return "LINE Bot is running!", 200
 
-
 @app.route("/callback", methods=["POST"])
 def callback():
     signature = request.headers.get("X-Line-Signature", "")
     body = request.get_data(as_text=True)
-    logging.info(f"Request Body: {body}")
+    logging.info(f"📩 Request Body: {body}")
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        logging.error("Invalid Signature!")
+        logging.error("❌ Invalid Signature!")
         return "Invalid signature", 400
     return "OK", 200
-
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
@@ -108,7 +107,6 @@ def handle_text_message(event):
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Tidak ada jadwal kosong."))
             return
 
-        # Membuat Quick Reply Buttons untuk pemilihan jadwal
         quick_reply_buttons = [
             QuickReplyButton(action=MessageAction(label=slot, text=f"Pilih {slot}")) for slot in available_slots
         ]
@@ -150,7 +148,7 @@ def handle_text_message(event):
             try:
                 calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event_body).execute()
             except Exception as e:
-                logging.error(f"Google Calendar Error: {e}")
+                logging.error(f"❌ Google Calendar Error: {e}")
                 line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Terjadi kesalahan saat menyimpan jadwal. Silakan coba lagi nanti."))
                 return
 
@@ -163,9 +161,10 @@ def handle_text_message(event):
             )
 
         except Exception as e:
-            logging.error(f"Error: {e}")
+            logging.error(f"❌ Error: {e}")
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Format salah. Gunakan: Pilih <jam> <pesan broadcast>."))
 
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+    port = int(os.getenv("PORT", "8000"))
+    logging.info(f"🚀 Running on port {port}")
+    app.run(host="0.0.0.0", port=port)
