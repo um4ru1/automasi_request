@@ -163,3 +163,15 @@ def handle_text_message(event):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+
+try:
+    events_result = calendar_service.events().list(
+        calendarId=GOOGLE_CALENDAR_ID, timeMin=now, maxResults=20, singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    events = events_result.get('items', [])
+    logging.info(f"📆 Events ditemukan: {json.dumps(events, indent=2)}")  # Tambahkan ini
+except Exception as e:
+    logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
+    return []
+
