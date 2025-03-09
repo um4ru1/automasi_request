@@ -27,14 +27,24 @@ if not all([LINE_ACCESS_TOKEN, LINE_CHANNEL_SECRET, SPREADSHEET_ID, GOOGLE_CREDE
     raise ValueError("Environment variables tidak lengkap! Periksa kembali konfigurasi di Koyeb.")
 
 # Konfigurasi Google Sheets
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_json = json.loads(GOOGLE_CREDENTIALS)
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
-client = gspread.authorize(creds)
-sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+try:
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds_json = json.loads(GOOGLE_CREDENTIALS)
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
+    client = gspread.authorize(creds)
+    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+    logging.info("Terhubung ke Google Sheets.")
+except Exception as e:
+    logging.error(f"Error Google Sheets: {e}")
+    raise
 
 # Konfigurasi Google Calendar
-calendar_service = build("calendar", "v3", credentials=creds)
+try:
+    calendar_service = build("calendar", "v3", credentials=creds)
+    logging.info("Terhubung ke Google Calendar.")
+except Exception as e:
+    logging.error(f"Error Google Calendar: {e}")
+    raise
 
 # Zona waktu Jakarta
 jakarta_tz = pytz.timezone("Asia/Jakarta")
@@ -42,20 +52,24 @@ jakarta_tz = pytz.timezone("Asia/Jakarta")
 
 def get_available_slots():
     now = datetime.now(jakarta_tz).isoformat()
-    events_result = calendar_service.events().list(
-        calendarId=GOOGLE_CALENDAR_ID, timeMin=now, maxResults=20, singleEvents=True,
-        orderBy='startTime'
-    ).execute()
-    events = events_result.get('items', [])
-    
+    try:
+        events_result = calendar_service.events().list(
+            calendarId=GOOGLE_CALENDAR_ID, timeMin=now, maxResults=20, singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+        events = events_result.get('items', [])
+    except Exception as e:
+        logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
+        return []
+
     booked_slots = {event['start']['dateTime'][11:16] for event in events if 'dateTime' in event['start']}
-    
+
     available_slots = []
     for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, 13:00, ..., 22:00)
         time_slot = f"{hour:02}:00"
         if time_slot not in booked_slots:
             available_slots.append(time_slot)
-    
+
     return available_slots
 
 
@@ -96,7 +110,7 @@ def handle_text_message(event):
 
         # Membuat Quick Reply Buttons untuk pemilihan jadwal
         quick_reply_buttons = [
-            QuickReplyButton(action=MessageAction(label=slot, text=f"Pilih {i+1} ")) for i, slot in enumerate(available_slots)
+            QuickReplyButton(action=MessageAction(label=slot, text=f"Pilih {slot}")) for slot in available_slots
         ]
         quick_reply = QuickReply(items=quick_reply_buttons)
 
@@ -111,28 +125,20 @@ def handle_text_message(event):
             parts = user_text.split(" ", 2)
             if len(parts) < 3:
                 raise ValueError("Format salah")
-            slot_index = int(parts[1]) - 1
+            selected_time = parts[1]
             broadcast_text = parts[2]
             available_slots = get_available_slots()
 
-            if slot_index < 0 or slot_index >= len(available_slots):
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Nomor jadwal tidak valid."))
+            if selected_time not in available_slots:
+                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Jadwal tidak valid atau sudah diambil."))
                 return
 
-            selected_time = available_slots[slot_index]
             now_jakarta = datetime.now(jakarta_tz)
             date_today = now_jakarta.strftime("%Y-%m-%d")
 
             selected_datetime = jakarta_tz.localize(datetime.strptime(f"{date_today} {selected_time}", "%Y-%m-%d %H:%M"))
             start_time = selected_datetime.isoformat()
             end_time = (selected_datetime + timedelta(hours=1)).isoformat()
-
-            # Cek apakah jadwal sudah ada di Google Sheets
-            existing_records = sheet.get_all_values()
-            for row in existing_records:
-                if row[1] == selected_time:  # Kolom kedua adalah waktu
-                    line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Jadwal ini sudah diambil, silakan pilih yang lain."))
-                    return
 
             # Simpan ke Google Calendar
             event_body = {
@@ -158,8 +164,8 @@ def handle_text_message(event):
 
         except Exception as e:
             logging.error(f"Error: {e}")
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Format salah. Gunakan: Pilih <nomor jadwal> <pesan broadcast>."))
+            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Format salah. Gunakan: Pilih <jam> <pesan broadcast>."))
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
