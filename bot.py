@@ -97,9 +97,11 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
+    logging.info(f"📨 Menerima pesan dari {event.source.user_id}: {event.message.text}")
+    
     user_text = event.message.text.strip()
     user_id = event.source.user_id
-
+    
     if user_text.lower() == "!jadwal":
         available_slots = get_available_slots()
 
