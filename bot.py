@@ -1,158 +1,111 @@
-from flask import Flask, request
-import gspread
-from google.oauth2.service_account import Credentials
 import os
 import json
-import logging
+import datetime
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from linebot import LineBotApi, WebhookHandler
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, TextMessage, FlexSendMessage, PostbackEvent
+from flask import Flask, request, abort
 from googleapiclient.discovery import build
-from datetime import datetime, timedelta
-import pytz
+from google.oauth2 import service_account
 
-# Konfigurasi Logging
-logging.basicConfig(level=logging.INFO)
-
-app = Flask(__name__)
-
-# Load konfigurasi dari environment variables
-LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
+# Load environment variables
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
-SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
-GOOGLE_CREDENTIALS = os.getenv("GOOGLE_CREDENTIALS")
+LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
+GOOGLE_CREDENTIALS = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID")
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
-if not all([LINE_ACCESS_TOKEN, LINE_CHANNEL_SECRET, SPREADSHEET_ID, GOOGLE_CREDENTIALS, GOOGLE_CALENDAR_ID]):
-    raise ValueError("Environment variables tidak lengkap! Periksa kembali konfigurasi di Koyeb.")
-
-# Konfigurasi Google Sheets
-try:
-    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds_json = json.loads(GOOGLE_CREDENTIALS)
-    creds = Credentials.from_service_account_info(creds_json, scopes=scope)
-    client = gspread.authorize(creds)
-    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
-    logging.info("✅ Terhubung ke Google Sheets.")
-except Exception as e:
-    logging.error(f"❌ Error Google Sheets: {e}")
-    raise
-
-# Konfigurasi Google Calendar
-try:
-    calendar_service = build("calendar", "v3", credentials=creds)
-    logging.info("✅ Terhubung ke Google Calendar.")
-except Exception as e:
-    logging.error(f"❌ Error Google Calendar: {e}")
-    raise
-
-# Zona waktu Jakarta
-jakarta_tz = pytz.timezone("Asia/Jakarta")
-
-def get_available_slots():
-    now = datetime.now(jakarta_tz).isoformat()
-    try:
-        events_result = calendar_service.events().list(
-            calendarId=GOOGLE_CALENDAR_ID, timeMin=now, maxResults=20, singleEvents=True,
-            orderBy='startTime'
-        ).execute()
-        events = events_result.get('items', [])
-        logging.info(f"📅 Event dari Google Calendar: {events}")
-    except Exception as e:
-        logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
-        return []
-
-    booked_slots = set()
-    for event in events:
-        start = event['start']
-        if 'dateTime' in start:
-            booked_slots.add(start['dateTime'][11:16])  # Ambil format HH:MM
-        elif 'date' in start:
-            booked_slots.add("00:00")  # Jika hanya ada 'date', anggap event sepanjang hari
-
-    logging.info(f"🕒 Jadwal yang sudah dipesan: {booked_slots}")
-
-    available_slots = []
-    for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, ..., 22:00)
-        time_slot = f"{hour:02}:00"
-        if time_slot not in booked_slots:
-            available_slots.append(time_slot)
-
-    logging.info(f"✅ Jadwal kosong yang tersedia: {available_slots}")
-    return available_slots
-
-# Konfigurasi LINE API
+# Initialize LINE API
 line_bot_api = LineBotApi(LINE_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-@app.route("/")
-def home():
-    return "LINE Bot is running!", 200
+# Google Calendar Authentication
+credentials = service_account.Credentials.from_service_account_info(
+    GOOGLE_CREDENTIALS, scopes=["https://www.googleapis.com/auth/calendar"]
+)
+service = build("calendar", "v3", credentials=credentials)
+
+# Google Sheets Authentication
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(GOOGLE_CREDENTIALS, scope)
+client = gspread.authorize(creds)
+sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+
+app = Flask(__name__)
 
 @app.route("/callback", methods=["POST"])
 def callback():
-    signature = request.headers.get("X-Line-Signature", "")
+    signature = request.headers["X-Line-Signature"]
     body = request.get_data(as_text=True)
-    logging.info(f"📩 Request Body: {body}")
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        logging.error("❌ Invalid Signature!")
-        return "Invalid signature", 400
-    return "OK", 200
+        abort(400)
+    return "OK"
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    user_text = event.message.text.strip()
-    user_id = event.source.user_id
+    if event.message.text == "!jadwal":
+        flex_message = create_flex_message()
+        line_bot_api.reply_message(event.reply_token, flex_message)
 
-    if user_text.lower() == "!jadwal":
-        available_slots = get_available_slots()
-        if not available_slots:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Tidak ada jadwal kosong."))
-            return
-
-        quick_reply_buttons = [
-            QuickReplyButton(action=MessageAction(label=slot, text=f"Pilih {slot}")) for slot in available_slots
-        ]
-        quick_reply = QuickReply(items=quick_reply_buttons)
-
-        reply_message = TextSendMessage(
-            text="Silakan pilih jadwal yang tersedia:",
-            quick_reply=quick_reply
-        )
-        line_bot_api.reply_message(event.reply_token, reply_message)
-
-    elif user_text.lower().startswith("pilih"):
-        parts = user_text.split(" ", 2)
-        if len(parts) < 2:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Format salah. Gunakan: Pilih <jam> <pesan broadcast>."))
-            return
-
-        selected_time = parts[1]
-        broadcast_text = parts[2] if len(parts) > 2 else "(Tanpa Pesan)"
-
-        available_slots = get_available_slots()
-        if selected_time not in available_slots:
-            line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Jadwal tidak valid atau sudah diambil."))
-            return
-
-        now_jakarta = datetime.now(jakarta_tz)
-        date_today = now_jakarta.strftime("%Y-%m-%d")
-        selected_datetime = jakarta_tz.localize(datetime.strptime(f"{date_today} {selected_time}", "%Y-%m-%d %H:%M"))
-        start_time = selected_datetime.isoformat()
-        end_time = (selected_datetime + timedelta(hours=1)).isoformat()
-
-        event_body = {
-            "summary": f"Booking oleh {user_id}",
-            "start": {"dateTime": start_time, "timeZone": "Asia/Jakarta"},
-            "end": {"dateTime": end_time, "timeZone": "Asia/Jakarta"}
+def create_flex_message():
+    flex_content = {
+        "type": "bubble",
+        "body": {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [
+                {"type": "text", "text": "Pilih Jadwal", "weight": "bold", "size": "xl"},
+                {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        {
+                            "type": "button",
+                            "style": "primary",
+                            "action": {
+                                "type": "datetimepicker",
+                                "label": "Pilih Tanggal & Waktu",
+                                "data": "action=select_date",
+                                "mode": "datetime"
+                            }
+                        },
+                        {
+                            "type": "button",
+                            "style": "secondary",
+                            "action": {
+                                "type": "message",
+                                "label": "Ketik Pesan Broadcast",
+                                "text": "Masukkan pesan broadcast: "
+                            }
+                        }
+                    ]
+                }
+            ]
         }
+    }
+    return FlexSendMessage(alt_text="Form Input Jadwal", contents=flex_content)
 
-        calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event_body).execute()
-        sheet.append_row([user_id, selected_time, broadcast_text])
+@handler.add(PostbackEvent)
+def handle_postback(event):
+    data = event.postback.data
+    if data.startswith("action=select_date"):
+        selected_datetime = event.postback.params["datetime"]
+        user_id = event.source.user_id
+        store_event(user_id, selected_datetime)
+        line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Jadwal disimpan: {selected_datetime}"))
 
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"Jadwal {selected_time} telah dipesan dengan pesan: {broadcast_text}"))
+def store_event(user_id, selected_datetime):
+    event = {
+        "summary": f"Booking oleh {user_id}",
+        "start": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"},
+        "end": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"}
+    }
+    service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event).execute()
+    sheet.append_row([user_id, selected_datetime, "Pesan pending..."])  # Tempat penyimpanan pesan
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
+    app.run(host="0.0.0.0", port=5000)
