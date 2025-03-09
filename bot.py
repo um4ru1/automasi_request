@@ -50,7 +50,6 @@ except Exception as e:
 jakarta_tz = pytz.timezone("Asia/Jakarta")
 
 def get_available_slots():
-    logging.info(f"📅 Event dari Google Calendar: {json.dumps(events, indent=2)}")
     now = datetime.now(jakarta_tz).isoformat()
     try:
         events_result = calendar_service.events().list(
@@ -58,20 +57,20 @@ def get_available_slots():
             orderBy='startTime'
         ).execute()
         events = events_result.get('items', [])
-        logging.info(f"📅 Event dari Google Calendar: {events}")  # Tambahkan logging ini
+        logging.info(f"📅 Event dari Google Calendar: {events}")
     except Exception as e:
         logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
         return []
 
     booked_slots = set()
-for event in events:
-    start = event['start']
-    if 'dateTime' in start:
-        booked_slots.add(start['dateTime'][11:16])  # Ambil format HH:MM
-    elif 'date' in start:
-        booked_slots.add("00:00")  # Jika hanya ada 'date', anggap event sepanjang hari
+    for event in events:
+        start = event['start']
+        if 'dateTime' in start:
+            booked_slots.add(start['dateTime'][11:16])  # Ambil format HH:MM
+        elif 'date' in start:
+            booked_slots.add("00:00")  # Jika hanya ada 'date', anggap event sepanjang hari
 
-    logging.info(f"🕒 Jadwal yang sudah dipesan: {booked_slots}")  # Tambahkan logging ini
+    logging.info(f"🕒 Jadwal yang sudah dipesan: {booked_slots}")
 
     available_slots = []
     for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, 13:00, ..., 22:00)
@@ -79,9 +78,8 @@ for event in events:
         if time_slot not in booked_slots:
             available_slots.append(time_slot)
 
-    logging.info(f"✅ Jadwal kosong yang tersedia: {available_slots}")  # Tambahkan logging ini
+    logging.info(f"✅ Jadwal kosong yang tersedia: {available_slots}")
     return available_slots
-
 
 # Konfigurasi LINE API
 line_bot_api = LineBotApi(LINE_ACCESS_TOKEN)
@@ -110,12 +108,10 @@ def handle_text_message(event):
 
     if user_text.lower() == "!jadwal":
         available_slots = get_available_slots()
-
         if not available_slots:
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Tidak ada jadwal kosong."))
             return
 
-        # Membuat Quick Reply Buttons untuk pemilihan jadwal
         quick_reply_buttons = [
             QuickReplyButton(action=MessageAction(label=slot, text=f"Pilih {slot}")) for slot in available_slots
         ]
@@ -147,36 +143,22 @@ def handle_text_message(event):
             start_time = selected_datetime.isoformat()
             end_time = (selected_datetime + timedelta(hours=1)).isoformat()
 
-            # Simpan ke Google Calendar
             event_body = {
                 "summary": f"Booking oleh {user_id}",
                 "start": {"dateTime": start_time, "timeZone": "Asia/Jakarta"},
                 "end": {"dateTime": end_time, "timeZone": "Asia/Jakarta"}
             }
 
-            try:
-                calendar_service = build("calendar", "v3", credentials=creds)
-                logging.info("✅ Terhubung ke Google Calendar.")
-                test_calendar = calendar_service.calendarList().list().execute()
-                logging.info(f"📜 Daftar Kalender: {test_calendar}")
-            except Exception as e:
-                logging.error(f"❌ Error Google Calendar: {e}")
-
-
-            # Simpan ke Google Sheets
+            calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event_body).execute()
             sheet.append_row([user_id, selected_time, broadcast_text])
 
             line_bot_api.reply_message(
                 event.reply_token, 
                 TextSendMessage(text=f"Jadwal {selected_time} telah dipesan dengan pesan: {broadcast_text}")
             )
-
         except Exception as e:
             logging.error(f"Error: {e}")
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Format salah. Gunakan: Pilih <jam> <pesan broadcast>."))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
-
-
-
