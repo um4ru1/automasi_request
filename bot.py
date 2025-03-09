@@ -50,6 +50,7 @@ except Exception as e:
 jakarta_tz = pytz.timezone("Asia/Jakarta")
 
 def get_available_slots():
+    logging.info(f"📅 Event dari Google Calendar: {json.dumps(events, indent=2)}")
     now = datetime.now(jakarta_tz).isoformat()
     try:
         events_result = calendar_service.events().list(
@@ -62,7 +63,14 @@ def get_available_slots():
         logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
         return []
 
-    booked_slots = {event['start']['dateTime'][11:16] for event in events if 'dateTime' in event['start']}
+    booked_slots = set()
+for event in events:
+    start = event['start']
+    if 'dateTime' in start:
+        booked_slots.add(start['dateTime'][11:16])  # Ambil format HH:MM
+    elif 'date' in start:
+        booked_slots.add("00:00")  # Jika hanya ada 'date', anggap event sepanjang hari
+
     logging.info(f"🕒 Jadwal yang sudah dipesan: {booked_slots}")  # Tambahkan logging ini
 
     available_slots = []
