@@ -57,11 +57,13 @@ def get_available_slots():
             orderBy='startTime'
         ).execute()
         events = events_result.get('items', [])
+        logging.info(f"📅 Event dari Google Calendar: {events}")  # Tambahkan logging ini
     except Exception as e:
         logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
         return []
 
     booked_slots = {event['start']['dateTime'][11:16] for event in events if 'dateTime' in event['start']}
+    logging.info(f"🕒 Jadwal yang sudah dipesan: {booked_slots}")  # Tambahkan logging ini
 
     available_slots = []
     for hour in range(7, 23, 3):  # Interval 3 jam (7:00, 10:00, 13:00, ..., 22:00)
@@ -69,7 +71,9 @@ def get_available_slots():
         if time_slot not in booked_slots:
             available_slots.append(time_slot)
 
+    logging.info(f"✅ Jadwal kosong yang tersedia: {available_slots}")  # Tambahkan logging ini
     return available_slots
+
 
 # Konfigurasi LINE API
 line_bot_api = LineBotApi(LINE_ACCESS_TOKEN)
@@ -143,11 +147,13 @@ def handle_text_message(event):
             }
 
             try:
-                calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event_body).execute()
+                calendar_service = build("calendar", "v3", credentials=creds)
+                logging.info("✅ Terhubung ke Google Calendar.")
+                test_calendar = calendar_service.calendarList().list().execute()
+                logging.info(f"📜 Daftar Kalender: {test_calendar}")
             except Exception as e:
-                logging.error(f"Google Calendar Error: {e}")
-                line_bot_api.reply_message(event.reply_token, TextSendMessage(text="Terjadi kesalahan saat menyimpan jadwal. Silakan coba lagi nanti."))
-                return
+                logging.error(f"❌ Error Google Calendar: {e}")
+
 
             # Simpan ke Google Sheets
             sheet.append_row([user_id, selected_time, broadcast_text])
@@ -164,14 +170,5 @@ def handle_text_message(event):
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
 
-try:
-    events_result = calendar_service.events().list(
-        calendarId=GOOGLE_CALENDAR_ID, timeMin=now, maxResults=20, singleEvents=True,
-        orderBy='startTime'
-    ).execute()
-    events = events_result.get('items', [])
-    logging.info(f"📆 Events ditemukan: {json.dumps(events, indent=2)}")  # Tambahkan ini
-except Exception as e:
-    logging.error(f"Error mendapatkan jadwal dari Google Calendar: {e}")
-    return []
+
 
