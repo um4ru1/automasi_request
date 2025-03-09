@@ -7,4 +7,6 @@ google-auth-httplib2
 google-api-python-client
 line-bot-sdk
 pytz
-oauth2client
+requests
+setuptools
+wheel
