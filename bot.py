@@ -1,6 +1,5 @@
 import os
 import json
-import datetime
 import gspread
 from flask import Flask, request, abort
 from google.oauth2 import service_account
@@ -11,7 +10,7 @@ from linebot.models import (
     MessageEvent, TextMessage, FlexSendMessage, PostbackEvent
 )
 
-# Load environment variables
+# Load environment variables from Koyeb
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
 LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
 GOOGLE_CREDENTIALS = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
@@ -22,13 +21,11 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 line_bot_api = LineBotApi(LINE_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-# Google Calendar Authentication
+# Google Authentication
 credentials = service_account.Credentials.from_service_account_info(
     GOOGLE_CREDENTIALS, scopes=["https://www.googleapis.com/auth/calendar"]
 )
 calendar_service = build("calendar", "v3", credentials=credentials)
-
-# Google Sheets Authentication
 gspread_client = gspread.authorize(credentials)
 sheet = gspread_client.open_by_key(SPREADSHEET_ID).sheet1
 
@@ -61,6 +58,7 @@ def create_flex_message():
                 {
                     "type": "box",
                     "layout": "vertical",
+                    "spacing": "md",
                     "contents": [
                         {
                             "type": "button",
@@ -74,7 +72,7 @@ def create_flex_message():
                         },
                         {
                             "type": "text",
-                            "text": "✏️ Masukkan pesan broadcast di bawah:",
+                            "text": "📝 Masukkan pesan broadcast di bawah:",
                             "weight": "bold",
                             "margin": "md"
                         },
@@ -89,6 +87,16 @@ def create_flex_message():
                                     "flex": 1
                                 }
                             ]
+                        },
+                        {
+                            "type": "button",
+                            "style": "primary",
+                            "color": "#00B900",
+                            "action": {
+                                "type": "message",
+                                "label": "Kirim Pesan",
+                                "text": "Pesan Broadcast:"
+                            }
                         }
                     ]
                 }
