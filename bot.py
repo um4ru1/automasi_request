@@ -27,6 +27,13 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 calendar_service = build("calendar", "v3", credentials=credentials)
 gspread_client = gspread.authorize(credentials)
+
+try:
+    sheet = gspread_client.open_by_key(SPREADSHEET_ID).sheet1
+except Exception as e:
+    print(f"Error accessing Google Sheets: {e}")
+
+
 sheet = gspread_client.open_by_key(SPREADSHEET_ID).sheet1
 
 app = Flask(__name__)
