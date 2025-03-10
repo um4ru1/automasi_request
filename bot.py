@@ -2,12 +2,14 @@ import os
 import json
 import datetime
 import gspread
-from google.oauth2.service_account import Credentials
+from flask import Flask, request, abort
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, FlexSendMessage, PostbackEvent
-from flask import Flask, request, abort
-from googleapiclient.discovery import build
+from linebot.models import (
+    MessageEvent, TextMessage, FlexSendMessage, PostbackEvent
+)
 
 # Load environment variables
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
@@ -21,16 +23,14 @@ line_bot_api = LineBotApi(LINE_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
 # Google Calendar Authentication
-credentials = Credentials.from_service_account_info(
+credentials = service_account.Credentials.from_service_account_info(
     GOOGLE_CREDENTIALS, scopes=["https://www.googleapis.com/auth/calendar"]
 )
-service = build("calendar", "v3", credentials=credentials)
+calendar_service = build("calendar", "v3", credentials=credentials)
 
 # Google Sheets Authentication
-scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-creds = Credentials.from_service_account_info(GOOGLE_CREDENTIALS, scopes=scope)
-client = gspread.authorize(creds)
-sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+gspread_client = gspread.authorize(credentials)
+sheet = gspread_client.open_by_key(SPREADSHEET_ID).sheet1
 
 app = Flask(__name__)
 
@@ -44,26 +44,11 @@ def callback():
         abort(400)
     return "OK"
 
-# Menyimpan data sementara untuk user
-user_data = {}
-
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    user_id = event.source.user_id
-    text = event.message.text
-
-    # Jika user mengetik "!jadwal", kirim form
-    if text == "!jadwal":
+    if event.message.text == "!jadwal":
         flex_message = create_flex_message()
         line_bot_api.reply_message(event.reply_token, flex_message)
-
-    # Jika user mengetik teks setelah memilih waktu, simpan ke Google Sheets
-    elif user_id in user_data and "selected_datetime" in user_data[user_id]:
-        selected_datetime = user_data[user_id]["selected_datetime"]
-        save_to_sheets(user_id, selected_datetime, text)
-        save_to_calendar(user_id, selected_datetime)
-        line_bot_api.reply_message(event.reply_token, TextMessage(text="✅ Jadwal dan pesan telah disimpan!"))
-        del user_data[user_id]  # Hapus data user setelah disimpan
 
 def create_flex_message():
     flex_content = {
@@ -72,7 +57,7 @@ def create_flex_message():
             "type": "box",
             "layout": "vertical",
             "contents": [
-                {"type": "text", "text": "Pilih Jadwal", "weight": "bold", "size": "xl"},
+                {"type": "text", "text": "Pilih Jadwal & Masukkan Pesan", "weight": "bold", "size": "xl"},
                 {
                     "type": "box",
                     "layout": "vertical",
@@ -86,6 +71,24 @@ def create_flex_message():
                                 "data": "action=select_date",
                                 "mode": "datetime"
                             }
+                        },
+                        {
+                            "type": "text",
+                            "text": "✏️ Masukkan pesan broadcast di bawah:",
+                            "weight": "bold",
+                            "margin": "md"
+                        },
+                        {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "Ketik pesan...",
+                                    "color": "#AAAAAA",
+                                    "flex": 1
+                                }
+                            ]
                         }
                     ]
                 }
@@ -97,22 +100,19 @@ def create_flex_message():
 @handler.add(PostbackEvent)
 def handle_postback(event):
     data = event.postback.data
-    user_id = event.source.user_id
-
     if data.startswith("action=select_date"):
         selected_datetime = event.postback.params["datetime"]
-        user_data[user_id] = {"selected_datetime": selected_datetime}
-        line_bot_api.reply_message(event.reply_token, TextMessage(text="📌 Silakan ketik pesan broadcast Anda."))
+        user_id = event.source.user_id
+        store_event(user_id, selected_datetime, "Pesan belum diinput")
+        line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Jadwal disimpan: {selected_datetime}\nSilakan ketik pesan broadcast Anda."))
 
-def save_to_calendar(user_id, selected_datetime):
+def store_event(user_id, selected_datetime, message):
     event = {
         "summary": f"Booking oleh {user_id}",
         "start": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"},
         "end": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"}
     }
-    service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event).execute()
-
-def save_to_sheets(user_id, selected_datetime, message):
+    calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event).execute()
     sheet.append_row([user_id, selected_datetime, message])
 
 if __name__ == "__main__":
