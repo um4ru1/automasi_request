@@ -77,7 +77,16 @@ def handle_postback(event):
         selected_datetime = event.postback.params["datetime"]
         user_id = event.source.user_id
         store_event(user_id, selected_datetime, "Pesan belum diinput")
-        line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Jadwal disimpan: {selected_datetime}\nSilakan ketik pesan broadcast Anda."))
+        
+        quick_reply = QuickReply(items=[
+            QuickReplyButton(action=PostbackAction(label="Ketik Pesan", data=f"action=input_message&user_id={user_id}"))
+        ])
+        
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextMessage(text=f"Jadwal disimpan: {selected_datetime}\nSilakan ketik pesan broadcast Anda.", quick_reply=quick_reply)
+        )
+
 
 def store_event(user_id, selected_datetime, message):
     try:
@@ -128,7 +137,7 @@ def create_flex_message():
                             "action": {
                                 "type": "datetimepicker",
                                 "label": "Pilih Waktu",
-                                "data": "action=select_datetime",
+                                "data": "action=select_date",
                                 "mode": "datetime"
                             }
                         },
@@ -139,22 +148,12 @@ def create_flex_message():
                             "margin": "md"
                         },
                         {
-                            "type": "box",
-                            "layout": "horizontal",
-                            "contents": [
-                                {
-                                    "type": "text",
-                                    "text": "Ketik di sini...",
-                                    "size": "sm",
-                                    "color": "#AAAAAA"
-                                }
-                            ],
-                            "borderWidth": "normal",
-                            "borderColor": "#CCCCCC",
-                            "cornerRadius": "md",
-                            "paddingAll": "10px",
+                            "type": "button",
+                            "style": "secondary",
+                            "color": "#AAAAAA",
                             "action": {
                                 "type": "message",
+                                "label": "Ketik Pesan",
                                 "text": "Pesan: "
                             }
                         }
@@ -167,6 +166,7 @@ def create_flex_message():
         alt_text="Form Input Jadwal",
         contents=flex_content
     )
+
 
 
 if __name__ == "__main__":
