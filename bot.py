@@ -19,9 +19,8 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
 # Define Google API Scopes
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",  # Access Google Sheets
-    "https://www.googleapis.com/auth/calendar",  # Access Google Calendar
-    "https://www.googleapis.com/auth/drive.file"  # (Optional) If working with files
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/calendar"
 ]
 
 # Google Authentication
@@ -58,9 +57,45 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_text_message(event):
-    if event.message.text == "!jadwal":
+    user_id = event.source.user_id
+    message_text = event.message.text
+    
+    if message_text == "!jadwal":
         flex_message = create_flex_message()
         line_bot_api.reply_message(event.reply_token, flex_message)
+    else:
+        # Simpan pesan ke Google Sheets untuk user yang sudah memilih jadwal
+        update_message(user_id, message_text)
+        line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Pesan Broadcast:\n{message_text}"))
+
+@handler.add(PostbackEvent)
+def handle_postback(event):
+    data = event.postback.data
+    if data.startswith("action=select_date"):
+        selected_datetime = event.postback.params["datetime"]
+        user_id = event.source.user_id
+        store_event(user_id, selected_datetime, "Pesan belum diinput")
+        line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Jadwal disimpan: {selected_datetime}\nSilakan ketik pesan broadcast Anda."))
+
+def store_event(user_id, selected_datetime, message):
+    try:
+        event = {
+            "summary": f"Booking oleh {user_id}",
+            "start": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"},
+            "end": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"}
+        }
+        calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event).execute()
+        
+        sheet.append_row([user_id, selected_datetime, message])
+    except Exception as e:
+        print(f"Error storing event: {e}")
+
+def update_message(user_id, message):
+    try:
+        cell = sheet.find(user_id)
+        sheet.update_cell(cell.row, 3, message)  # Update kolom pesan
+    except Exception as e:
+        print(f"Error updating message: {e}")
 
 def create_flex_message():
     flex_content = {
@@ -92,18 +127,6 @@ def create_flex_message():
                             "margin": "md"
                         },
                         {
-                            "type": "box",
-                            "layout": "horizontal",
-                            "contents": [
-                                {
-                                    "type": "text",
-                                    "text": "Ketik pesan...",
-                                    "color": "#AAAAAA",
-                                    "flex": 1
-                                }
-                            ]
-                        },
-                        {
                             "type": "button",
                             "style": "primary",
                             "color": "#00B900",
@@ -119,30 +142,6 @@ def create_flex_message():
         }
     }
     return FlexSendMessage(alt_text="Form Input Jadwal", contents=flex_content)
-
-@handler.add(PostbackEvent)
-def handle_postback(event):
-    data = event.postback.data
-    if data.startswith("action=select_date"):
-        selected_datetime = event.postback.params["datetime"]
-        user_id = event.source.user_id
-        store_event(user_id, selected_datetime, "Pesan belum diinput")
-        line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Jadwal disimpan: {selected_datetime}\nSilakan ketik pesan broadcast Anda."))
-
-def store_event(user_id, selected_datetime, message):
-    try:
-        # Save to Google Calendar
-        event = {
-            "summary": f"Booking oleh {user_id}",
-            "start": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"},
-            "end": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"}
-        }
-        calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event).execute()
-        
-        # Save to Google Sheets
-        sheet.append_row([user_id, selected_datetime, message])
-    except Exception as e:
-        print(f"Error storing event: {e}")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
