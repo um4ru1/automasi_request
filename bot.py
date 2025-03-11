@@ -10,7 +10,7 @@ from linebot.models import (
     MessageEvent, TextMessage, FlexSendMessage, PostbackEvent
 )
 from datetime import datetime, timedelta
-
+import pytz
 
 # Load environment variables from Koyeb
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
@@ -66,7 +66,6 @@ def handle_text_message(event):
         flex_message = create_flex_message()
         line_bot_api.reply_message(event.reply_token, flex_message)
     else:
-        # Simpan pesan ke Google Sheets untuk user yang sudah memilih jadwal
         update_message(user_id, message_text)
         line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Pesan Broadcast:\n{message_text}"))
 
@@ -81,20 +80,13 @@ def handle_postback(event):
 
 def store_event(user_id, selected_datetime, message):
     try:
-        # Konversi string ke format datetime
         start_time = datetime.fromisoformat(selected_datetime)
-        end_time = start_time + timedelta(minutes=1)  # Durasi minimal 1 menit
-
+        end_time = start_time + timedelta(minutes=1)
+        
         event = {
             "summary": f"Broadcast oleh {user_id}",
-            "start": {
-                "dateTime": start_time.isoformat(),
-                "timeZone": "Asia/Jakarta"
-            },
-            "end": {
-                "dateTime": end_time.isoformat(),
-                "timeZone": "Asia/Jakarta"
-            }
+            "start": {"dateTime": start_time.isoformat(), "timeZone": "Asia/Jakarta"},
+            "end": {"dateTime": end_time.isoformat(), "timeZone": "Asia/Jakarta"}
         }
         calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event).execute()
         
@@ -105,11 +97,24 @@ def store_event(user_id, selected_datetime, message):
 def update_message(user_id, message):
     try:
         cell = sheet.find(user_id)
-        sheet.update_cell(cell.row, 3, message)  # Update kolom pesan
+        sheet.update_cell(cell.row, 3, message)
     except Exception as e:
         print(f"Error updating message: {e}")
 
 def create_flex_message():
+    available_slots = ["07:00", "09:00", "11:00", "13:00", "15:00", "17:00", "19:00", "21:00"]
+    taken_slots = set(sheet.col_values(2))
+    available_slots = [time for time in available_slots if time not in taken_slots]
+    
+    quick_reply_items = [{
+        "type": "action",
+        "action": {
+            "type": "postback",
+            "label": time,
+            "data": f"action=select_date&time={time}"
+        }
+    } for time in available_slots]
+    
     flex_content = {
         "type": "bubble",
         "body": {
@@ -121,34 +126,7 @@ def create_flex_message():
                     "type": "box",
                     "layout": "vertical",
                     "spacing": "md",
-                    "contents": [
-                        {
-                            "type": "button",
-                            "style": "primary",
-                            "action": {
-                                "type": "datetimepicker",
-                                "label": "Pilih Tanggal & Waktu",
-                                "data": "action=select_date",
-                                "mode": "datetime"
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": "📝 Masukkan pesan broadcast di bawah:",
-                            "weight": "bold",
-                            "margin": "md"
-                        },
-                        {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#00B900",
-                            "action": {
-                                "type": "message",
-                                "label": "Kirim Pesan",
-                                "text": "Pesan Broadcast:"
-                            }
-                        }
-                    ]
+                    "contents": quick_reply_items
                 }
             ]
         }
