@@ -103,45 +103,71 @@ def update_message(user_id, message):
         print(f"Error updating message: {e}")
 
 def create_flex_message():
-    available_slots = ["07:00", "09:00", "11:00", "13:00", "15:00", "17:00", "19:00", "21:00"]
-    taken_slots = set(sheet.col_values(2))
-    available_slots = [time for time in available_slots if time not in taken_slots]
-
     flex_content = {
         "type": "bubble",
         "body": {
             "type": "box",
             "layout": "vertical",
             "contents": [
-                {"type": "text", "text": "Pilih Jadwal & Masukkan Pesan", "weight": "bold", "size": "xl"},
+                {"type": "text", "text": "Form Input Jadwal", "weight": "bold", "size": "xl"},
+                {"type": "text", "text": "Silakan pilih waktu dan masukkan pesan Anda.", "size": "md", "wrap": True},
                 {
                     "type": "box",
                     "layout": "vertical",
-                    "spacing": "md",
+                    "margin": "lg",
                     "contents": [
                         {
                             "type": "text",
-                            "text": "Pilih jam melalui Quick Reply di bawah.",
-                            "size": "md",
-                            "wrap": True
+                            "text": "Pilih Waktu Broadcast:",
+                            "weight": "bold"
+                        },
+                        {
+                            "type": "button",
+                            "style": "primary",
+                            "color": "#1DB446",
+                            "action": {
+                                "type": "datetimepicker",
+                                "label": "Pilih Waktu",
+                                "data": "action=select_datetime",
+                                "mode": "datetime"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "Masukkan Pesan Broadcast:",
+                            "weight": "bold",
+                            "margin": "md"
+                        },
+                        {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                                {
+                                    "type": "text",
+                                    "text": "Ketik di sini...",
+                                    "size": "sm",
+                                    "color": "#AAAAAA"
+                                }
+                            ],
+                            "borderWidth": "normal",
+                            "borderColor": "#CCCCCC",
+                            "cornerRadius": "md",
+                            "paddingAll": "10px",
+                            "action": {
+                                "type": "message",
+                                "text": "Pesan: "
+                            }
                         }
                     ]
                 }
             ]
         }
     }
-
-    quick_reply_buttons = [
-        QuickReplyButton(
-            action=PostbackAction(label=time, data=f"action=select_date&time={time}")
-        ) for time in available_slots
-    ]
-
     return FlexSendMessage(
         alt_text="Form Input Jadwal",
-        contents=flex_content,
-        quick_reply=QuickReply(items=quick_reply_buttons)
+        contents=flex_content
     )
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
