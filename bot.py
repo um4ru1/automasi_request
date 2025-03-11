@@ -11,6 +11,7 @@ from linebot.models import (
 )
 from datetime import datetime, timedelta
 import pytz
+from linebot.models import QuickReply, QuickReplyButton, PostbackAction
 
 # Load environment variables from Koyeb
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
@@ -105,16 +106,7 @@ def create_flex_message():
     available_slots = ["07:00", "09:00", "11:00", "13:00", "15:00", "17:00", "19:00", "21:00"]
     taken_slots = set(sheet.col_values(2))
     available_slots = [time for time in available_slots if time not in taken_slots]
-    
-    quick_reply_items = [{
-        "type": "action",
-        "action": {
-            "type": "postback",
-            "label": time,
-            "data": f"action=select_date&time={time}"
-        }
-    } for time in available_slots]
-    
+
     flex_content = {
         "type": "bubble",
         "body": {
@@ -126,12 +118,30 @@ def create_flex_message():
                     "type": "box",
                     "layout": "vertical",
                     "spacing": "md",
-                    "contents": quick_reply_items
+                    "contents": [
+                        {
+                            "type": "text",
+                            "text": "Pilih jam melalui Quick Reply di bawah.",
+                            "size": "md",
+                            "wrap": True
+                        }
+                    ]
                 }
             ]
         }
     }
-    return FlexSendMessage(alt_text="Form Input Jadwal", contents=flex_content)
+
+    quick_reply_buttons = [
+        QuickReplyButton(
+            action=PostbackAction(label=time, data=f"action=select_date&time={time}")
+        ) for time in available_slots
+    ]
+
+    return FlexSendMessage(
+        alt_text="Form Input Jadwal",
+        contents=flex_content,
+        quick_reply=QuickReply(items=quick_reply_buttons)
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
