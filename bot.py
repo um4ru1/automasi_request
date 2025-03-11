@@ -1,7 +1,7 @@
 import os
 import json
 import gspread
-from flask import Flask, request, abort
+from flask import Flask, request, abort, render_template
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from linebot import LineBotApi, WebhookHandler
@@ -11,7 +11,6 @@ from linebot.models import (
 )
 from datetime import datetime, timedelta
 import pytz
-from linebot.models import QuickReply, QuickReplyButton, PostbackAction
 
 # Load environment variables from Koyeb
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
@@ -19,6 +18,7 @@ LINE_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
 GOOGLE_CREDENTIALS = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+LIFF_URL = "https://your-liff-app-url"  # Ganti dengan URL LIFF kamu
 
 # Define Google API Scopes
 SCOPES = [
@@ -58,18 +58,6 @@ def callback():
         abort(400)
     return "OK"
 
-@handler.add(MessageEvent, message=TextMessage)
-def handle_text_message(event):
-    user_id = event.source.user_id
-    message_text = event.message.text
-    
-    if message_text == "!jadwal":
-        flex_message = create_flex_message()
-        line_bot_api.reply_message(event.reply_token, flex_message)
-    else:
-        update_message(user_id, message_text)
-        line_bot_api.reply_message(event.reply_token, TextMessage(text=f"Pesan Broadcast:\n{message_text}"))
-
 @handler.add(PostbackEvent)
 def handle_postback(event):
     data = event.postback.data
@@ -77,16 +65,18 @@ def handle_postback(event):
         selected_datetime = event.postback.params["datetime"]
         user_id = event.source.user_id
         store_event(user_id, selected_datetime, "Pesan belum diinput")
-        
-        quick_reply = QuickReply(items=[
-            QuickReplyButton(action=PostbackAction(label="Ketik Pesan", data=f"action=input_message&user_id={user_id}"))
-        ])
-        
         line_bot_api.reply_message(
             event.reply_token,
-            TextMessage(text=f"Jadwal disimpan: {selected_datetime}\nSilakan ketik pesan broadcast Anda.", quick_reply=quick_reply)
+            TextMessage(text=f"Jadwal disimpan: {selected_datetime}\nSilakan klik tombol Ketik Pesan untuk memasukkan pesan broadcast.")
         )
 
+@app.route("/submit_message", methods=["POST"])
+def submit_message():
+    data = request.json
+    user_id = data.get("user_id")
+    message = data.get("message")
+    update_message(user_id, message)
+    return {"status": "success", "message": "Pesan berhasil disimpan."}
 
 def store_event(user_id, selected_datetime, message):
     try:
@@ -152,9 +142,9 @@ def create_flex_message():
                             "style": "secondary",
                             "color": "#AAAAAA",
                             "action": {
-                                "type": "message",
+                                "type": "uri",
                                 "label": "Ketik Pesan",
-                                "text": "Pesan: "
+                                "uri": LIFF_URL
                             }
                         }
                     ]
@@ -166,8 +156,6 @@ def create_flex_message():
         alt_text="Form Input Jadwal",
         contents=flex_content
     )
-
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
