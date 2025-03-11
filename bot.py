@@ -9,6 +9,8 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
     MessageEvent, TextMessage, FlexSendMessage, PostbackEvent
 )
+from datetime import datetime, timedelta
+
 
 # Load environment variables from Koyeb
 LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
@@ -79,10 +81,20 @@ def handle_postback(event):
 
 def store_event(user_id, selected_datetime, message):
     try:
+        # Konversi string ke format datetime
+        start_time = datetime.fromisoformat(selected_datetime)
+        end_time = start_time + timedelta(minutes=1)  # Durasi minimal 1 menit
+
         event = {
-            "summary": f"Booking oleh {user_id}",
-            "start": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"},
-            "end": {"dateTime": selected_datetime, "timeZone": "Asia/Jakarta"}
+            "summary": f"Broadcast oleh {user_id}",
+            "start": {
+                "dateTime": start_time.isoformat(),
+                "timeZone": "Asia/Jakarta"
+            },
+            "end": {
+                "dateTime": end_time.isoformat(),
+                "timeZone": "Asia/Jakarta"
+            }
         }
         calendar_service.events().insert(calendarId=GOOGLE_CALENDAR_ID, body=event).execute()
         
