@@ -1,6 +1,7 @@
 from flask import Flask, request
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, TextMessage
+import os
 
 app = Flask(__name__)
 
