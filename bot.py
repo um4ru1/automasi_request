@@ -25,14 +25,10 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     help_message = (
-        "Berikut beberapa pilihan:
-"
-        "bru1 = hj -> Berikut link kalender, broadcast, dsb.
-"
-        "bru2 = hi -> Berikut link pengajuan agenda.
-"
-        "bru3 = hy -> Berikut link pengajuan ...
-"
+        "Berikut beberapa pilihan:\n"
+        "bru1 = hj -> Berikut link kalender, broadcast, dsb.\n"
+        "bru2 = hi -> Berikut link pengajuan agenda.\n"
+        "bru3 = hy -> Berikut link pengajuan ...\n"
         "bru4 = he -> Berikut link pengajuan ..."
     )
     
