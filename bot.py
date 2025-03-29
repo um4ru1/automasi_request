@@ -54,7 +54,7 @@ https://forms.gle/tp3SST7qEjGLSTwR7
         reply_text = textwrap.dedent("""\
             SOP BP HMME "ATMOSPHAIRA" 2025/2026
             yang tersedia sementara: melati2
-            Berikut beberapa pilihan:
+           
             rose1 = SOP Biro Kesekjenan
             rose2 = SOP Departemen Advokasi Keilmuan
             rose3 = SOP Departemen Medkom
