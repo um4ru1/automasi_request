@@ -2,6 +2,7 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
+import textwrap
 import os
 
 app = Flask(__name__)
@@ -50,8 +51,8 @@ https://forms.gle/tp3SST7qEjGLSTwR7
     elif user_message == "rose1":
         reply_text = "fdsafasdfa"
     else:
-        reply_text = (
-            """SOP BP HMME "ATMOSPHAIRA" 2025/2026
+        reply_text = textwrap.dedent("""\
+            SOP BP HMME "ATMOSPHAIRA" 2025/2026
             yang tersedia sementara: melati2
             Berikut beberapa pilihan:
             rose1 = SOP Biro Kesekjenan
@@ -61,7 +62,7 @@ https://forms.gle/tp3SST7qEjGLSTwR7
             rose5 = SOP Departemen Eksternal
             rose6 = SOP Departemen Internal
 
-            FORM REQUEST\n
+            FORM REQUEST
             melati1 = Pengajuan Agenda
             melati2 = Roseline(Publikasi grup line)
             melati3 = Rosepub(Media Atmos, publikasi ig, tiktok dkk)
@@ -75,9 +76,8 @@ https://forms.gle/tp3SST7qEjGLSTwR7
             KALENDER
             kal1 = KalenderRoseline
             kal2 = Kalendermelati
-            """
             
-        )
+            """)
 
     # Kirim balasan ke user
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
