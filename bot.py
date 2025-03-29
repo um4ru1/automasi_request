@@ -37,7 +37,7 @@ def handle_message(event):
     user_message = event.message.text.strip().lower()  # Ambil teks dan ubah ke huruf kecil
 
     # Cek input dari user dan berikan balasan yang sesuai
-    if user_message == "bru1":
+    if user_message == "melati2":
         reply_text = """GOOGLE CALENDAR:
 https://calendar.google.com/calendar/u/0?cid=ZTE1NGNhMGMwYjYxOWE5M2YzOGIyODVkMjI0ODA5ZTJiZTNhNzkzMWM0Y2RjMDU3ZWQzNjliYzdkM2Q3NTI4NEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t
 
@@ -47,13 +47,36 @@ https://forms.gle/dK4Xa4FXVWQZ6coH8
 FORM INPUT BROADCAST:
 https://forms.gle/tp3SST7qEjGLSTwR7
 """
-    elif user_message == "bru2":
+    elif user_message == "rose1":
         reply_text = "fdsafasdfa"
     else:
         reply_text = (
-            "Berikut beberapa pilihan:\n"
-            "bru1 = bla bla bla\n"
-            "bru2 = bla bla bla"
+            """SOP BP HMME "ATMOSPHAIRA" 2025/2026
+            yang tersedia sementara: melati2
+            Berikut beberapa pilihan:
+            rose1 = SOP Biro Kesekjenan
+            rose2 = SOP Departemen Advokasi Keilmuan
+            rose3 = SOP Departemen Medkom
+            rose4 = SOP Departemen PSDA
+            rose5 = SOP Departemen Eksternal
+            rose6 = SOP Departemen Internal
+
+            FORM REQUEST\n
+            melati1 = Pengajuan Agenda
+            melati2 = Roseline(Publikasi grup line)
+            melati3 = Rosepub(Media Atmos, publikasi ig, tiktok dkk)
+            melati4 = Rosemading(mading atmos offline)
+            melati5 = Rosedesain(Pemesanan Desain)
+            melati6 = Pengajuan SKA
+            melati7 = Permohonan bimbingan lomba
+            melati8 = kian(kepoin alumni)
+            melati9 = kunjungan bareng atmosphaira
+                 
+            KALENDER
+            kal1 = KalenderRoseline
+            kal2 = Kalendermelati
+            """
+            
         )
 
     # Kirim balasan ke user
