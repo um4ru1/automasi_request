@@ -38,7 +38,15 @@ def handle_message(event):
 
     # Cek input dari user dan berikan balasan yang sesuai
     if user_message == "bru1":
-        reply_text = "dfklafjlas"
+        reply_text = "GOOGLE CALENDAR:
+https://calendar.google.com/calendar/u/0?cid=ZTE1NGNhMGMwYjYxOWE5M2YzOGIyODVkMjI0ODA5ZTJiZTNhNzkzMWM0Y2RjMDU3ZWQzNjliYzdkM2Q3NTI4NEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t
+
+FORM PENGHAPUSAN JADWAL:
+https://forms.gle/dK4Xa4FXVWQZ6coH8
+
+FORM INPUT BROADCAST:
+https://forms.gle/tp3SST7qEjGLSTwR7
+"
     elif user_message == "bru2":
         reply_text = "fdsafasdfa"
     else:
