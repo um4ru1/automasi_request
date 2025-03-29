@@ -6,6 +6,7 @@ import os
 
 app = Flask(__name__)
 
+# Load environment variables
 CHANNEL_ACCESS_TOKEN = os.getenv("LINE_ACCESS_TOKEN")
 CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
 
@@ -14,6 +15,7 @@ if not CHANNEL_ACCESS_TOKEN:
 if not CHANNEL_SECRET:
     raise ValueError("CHANNEL_SECRET is not set. Check your environment variables.")
 
+# Initialize LINE Bot API and Webhook Handler
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
@@ -32,15 +34,22 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    help_message = (
-        "Berikut beberapa pilihan:\n"
-        "bru1 = hj -> Berikut link kalender, broadcast, dsb.\n"
-        "bru2 = hi -> Berikut link pengajuan agenda.\n"
-        "bru3 = hy -> Berikut link pengajuan ...\n"
-        "bru4 = he -> Berikut link pengajuan ..."
-    )
-    
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=help_message))
+    user_message = event.message.text.strip().lower()  # Ambil teks dan ubah ke huruf kecil
+
+    # Cek input dari user dan berikan balasan yang sesuai
+    if user_message == "bru1":
+        reply_text = "dfklafjlas"
+    elif user_message == "bru2":
+        reply_text = "fdsafasdfa"
+    else:
+        reply_text = (
+            "Berikut beberapa pilihan:\n"
+            "bru1 = bla bla bla\n"
+            "bru2 = bla bla bla"
+        )
+
+    # Kirim balasan ke user
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
 if __name__ == "__main__":
     app.run(port=8000)
