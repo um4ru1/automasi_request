@@ -1,6 +1,6 @@
 from flask import Flask, request
 from linebot import LineBotApi, WebhookHandler
-from linebot.models import MessageEvent, TextMessage
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
 
 app = Flask(__name__)
@@ -13,7 +13,6 @@ if not CHANNEL_ACCESS_TOKEN:
 if not CHANNEL_SECRET:
     raise ValueError("CHANNEL_SECRET is not set. Check your environment variables.")
 
-
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 
@@ -25,10 +24,19 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    if event.source.type == "group":
-        group_id = event.source.group_id
-        print("Group ID:", group_id)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=f"Group ID: {group_id}"))
+    help_message = (
+        "Berikut beberapa pilihan:
+"
+        "bru1 = hj -> Berikut link kalender, broadcast, dsb.
+"
+        "bru2 = hi -> Berikut link pengajuan agenda.
+"
+        "bru3 = hy -> Berikut link pengajuan ...
+"
+        "bru4 = he -> Berikut link pengajuan ..."
+    )
+    
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=help_message))
 
 if __name__ == "__main__":
     app.run(port=8000)
