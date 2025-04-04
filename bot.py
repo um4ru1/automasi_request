@@ -84,3 +84,18 @@ https://forms.gle/tp3SST7qEjGLSTwR7
 
 if __name__ == "__main__":
     app.run(port=8000)
+
+@app.route("/notify", methods=["POST"])
+def notify_admin():
+    data = request.get_json()
+    message_text = data.get("message", "📥 Ada request baru.")
+
+    # Ganti dengan LINE User ID kamu
+    user_id = "Ub062940b792f097128a8845f269c8ab3"
+
+    try:
+        line_bot_api.push_message(user_id, TextSendMessage(text=message_text))
+        return "✅ Notifikasi berhasil dikirim", 200
+    except Exception as e:
+        return f"❌ Gagal kirim notifikasi: {str(e)}", 500
+
