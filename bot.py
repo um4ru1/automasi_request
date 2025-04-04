@@ -85,12 +85,13 @@ https://forms.gle/tp3SST7qEjGLSTwR7
 if __name__ == "__main__":
     app.run(port=8000)
 
-@app.route("/notify", methods=["POST"])
+@app.route("/notify", methods=["GET", "POST"])
 def notify_admin():
+    if request.method == "GET":
+        return "Gunakan metode POST untuk mengirim notifikasi.", 405
+
     data = request.get_json()
     message_text = data.get("message", "📥 Ada request baru.")
-
-    # Ganti dengan LINE User ID kamu
     user_id = "Ub062940b792f097128a8845f269c8ab3"
 
     try:
@@ -98,4 +99,5 @@ def notify_admin():
         return "✅ Notifikasi berhasil dikirim", 200
     except Exception as e:
         return f"❌ Gagal kirim notifikasi: {str(e)}", 500
+
 
