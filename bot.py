@@ -40,13 +40,13 @@ def handle_message(event):
     # Cek input dari user dan berikan balasan yang sesuai
     if user_message == "melati2":
         reply_text = """GOOGLE CALENDAR:
-https://calendar.google.com/calendar/u/0?cid=ZTE1NGNhMGMwYjYxOWE5M2YzOGIyODVkMjI0ODA5ZTJiZTNhNzkzMWM0Y2RjMDU3ZWQzNjliYzdkM2Q3NTI4NEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t
+https://tr.ee/KalenderRoseline
 
-FORM PENGHAPUSAN JADWAL:
-https://forms.gle/dK4Xa4FXVWQZ6coH8
+Form Pemesanan Jadwal Publikasi Grup Line:
+https://tr.ee/FormPesanBcLINE
 
-FORM INPUT BROADCAST:
-https://forms.gle/tp3SST7qEjGLSTwR7
+Form Penghapusan Jadwal Publikasi Grup Line:
+https://tr.ee/FormHapusBcLINE
 """
     elif user_message == "rose1":
         reply_text = "fdsafasdfa"
