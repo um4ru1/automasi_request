@@ -91,16 +91,21 @@ def notify_admin():
         return "Gunakan metode POST untuk mengirim notifikasi.", 405
 
     data = request.get_json()
+    print("📥 Data POST diterima:", data)
+
     message_text = data.get("message", "📥 Ada request baru.")
-    
+
     user_ids = [
         "Ub062940b792f097128a8845f269c8ab3"
     ]
-    
+
     try:
         line_bot_api.multicast(user_ids, TextSendMessage(text=message_text))
+        print("✅ Berhasil kirim multicast!")
         return "✅ Notifikasi berhasil dikirim", 200
     except Exception as e:
+        print(f"❌ Gagal kirim multicast: {str(e)}")
         return f"❌ Gagal kirim notifikasi: {str(e)}", 500
+
 
 
