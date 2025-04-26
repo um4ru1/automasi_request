@@ -98,7 +98,7 @@ def notify_admin():
     ]
     
     try:
-        line_bot_api.push_message(user_ids, TextSendMessage(text=message_text))
+        line_bot_api.multicast(user_ids, TextSendMessage(text=message_text))
         return "✅ Notifikasi berhasil dikirim", 200
     except Exception as e:
         return f"❌ Gagal kirim notifikasi: {str(e)}", 500
