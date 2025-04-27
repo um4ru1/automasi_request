@@ -96,7 +96,7 @@ def notify_admin():
     message_text = data.get("message", "📥 Ada request baru.")
 
     user_ids = [
-        "Ub062940b792f097128a8845f269c8ab3"
+        "C057c315ef3883896b67280c4aa97066b"
     ]
 
     try:
