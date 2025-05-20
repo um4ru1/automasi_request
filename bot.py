@@ -64,7 +64,7 @@ https://tr.ee/FormHapusBcLINE
 
     else:
         flex_message = FlexSendMessage(
-            alt_text="Info Umum Atmosphaira",
+            alt_text="ATMOSINFO",
             contents=BubbleContainer(
                 hero=ImageComponent(
                     url="https://i.imgur.com/9HUCGEa.jpeg",
