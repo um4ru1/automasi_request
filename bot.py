@@ -216,8 +216,10 @@ https://tr.ee/FormHapusBcLINE
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-    else:
-        flex_message = BubbleContainer(
+else:
+    flex_message = FlexSendMessage(
+        alt_text="Keyword tidak ditemukan",
+        contents=BubbleContainer(
             body=BoxComponent(
                 layout='vertical',
                 spacing='md',
@@ -267,7 +269,8 @@ https://tr.ee/FormHapusBcLINE
                 ]
             )
         )
-        line_bot_api.reply_message(event.reply_token, flex_message)
+    )
+    line_bot_api.reply_message(event.reply_token, flex_message)
 
 
 if __name__ == "__main__":
