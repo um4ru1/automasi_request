@@ -96,9 +96,13 @@ https://tr.ee/FormHapusBcLINE
                             )
                         ),
                         TextComponent(text="📅 Kalender Pusat", weight="bold", size="md", margin="md"),
-                        TextComponent(
-                            text="ID Kalender:\nc_aee5d5c10e1ea4f22ce9252b92b378a948f2b43cd03000c3d3c7c1afe1d203ff@group.calendar.google.com",
-                            size="sm", wrap=True
+                        ButtonComponent(
+                            style="link",
+                            height="sm",
+                            action=URIAction(
+                                label="Lihat Kalender BP25",
+                                uri="https://calendar.google.com/calendar/embed?src=c_aee5d5c10e1ea4f22ce9252b92b378a948f2b43cd03000c3d3c7c1afe1d203ff%40group.calendar.google.com&ctz=Asia%2FJakarta"
+
                         ),
                     ]
                 )
