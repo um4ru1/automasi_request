@@ -43,15 +43,65 @@ def handle_message(event):
     user_message = event.message.text.strip().lower()
 
     if user_message == "minfopub":
-        reply_text = (
-            "GOOGLE CALENDAR:\n"
-            "https://tr.ee/KalenderRoseline\n\n"
-            "Form Pemesanan Jadwal Publikasi Grup Line:\n"
-            "https://tr.ee/FormPesanBcLINE\n\n"
-            "Form Penghapusan Jadwal Publikasi Grup Line:\n"
-            "https://tr.ee/FormHapusBcLINE\n"
+from linebot.models import (
+    FlexSendMessage, BubbleContainer, BoxComponent,
+    TextComponent, SeparatorComponent
+)
+
+if keyword == "minfopub":
+    flex_message = FlexSendMessage(
+        alt_text="Minfo Publikasi",
+        contents=BubbleContainer(
+            body=BoxComponent(
+                layout='vertical',
+                spacing='md',
+                contents=[
+                    TextComponent(
+                        text="Kalender BP25",
+                        weight="bold",
+                        size="md",
+                        wrap=True
+                    ),
+                    TextComponent(
+                        text="https://tr.ee/KalenderRoseline",
+                        size="sm",
+                        color="#0000EE",
+                        wrap=True,
+                        margin="xs"
+                    ),
+                    TextComponent(
+                        text="Form Pemesanan Jadwal Publikasi Grup Line:",
+                        weight="bold",
+                        size="md",
+                        wrap=True,
+                        margin="md"
+                    ),
+                    TextComponent(
+                        text="https://tr.ee/FormPesanBcLINE",
+                        size="sm",
+                        color="#0000EE",
+                        wrap=True,
+                        margin="xs"
+                    ),
+                    TextComponent(
+                        text="Form Penghapusan Jadwal Publikasi Grup Line:",
+                        weight="bold",
+                        size="md",
+                        wrap=True,
+                        margin="md"
+                    ),
+                    TextComponent(
+                        text="https://tr.ee/FormHapusBcLINE",
+                        size="sm",
+                        color="#0000EE",
+                        wrap=True,
+                        margin="xs"
+                    ),
+                ]
+            )
         )
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+    )
+    line_bot_api.reply_message(event.reply_token, flex_message)
 
     elif user_message == "ai":
         flex_message = FlexSendMessage(
