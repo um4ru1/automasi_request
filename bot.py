@@ -149,7 +149,7 @@ from linebot.models import (
                                     color="#000000"
                                 ),
                                 TextComponent(
-                                    text="Link pusat yang berisi Media Sosial HMME, Arsip pusat, SOP, Form Pemesanan, dan Kalender",
+                                    text="Link pusat yang berisi Media Sosial HMME, Arsip Pusat, SOP, Form Pemesanan, dan Kalender",
                                     size="xs",
                                     wrap=True
                                 ),
@@ -218,7 +218,7 @@ from linebot.models import (
                                     height="sm",
                                     color="#1C398E",
                                     action=URIAction(
-                                        label=":)",
+                                        label="Lihat Deskripsi",
                                         uri="https://docs.google.com/document/d/1sISZQncRWjkxGBrkwovLo3i-mMC_EOp5BB2skRDVUlM/edit?tab=t.0"
                                     ),
                                     margin="md"
@@ -248,7 +248,7 @@ from linebot.models import (
                                     height="sm",
                                     color="#1C398E",
                                     action=URIAction(
-                                        label="Aku ada saran/kritik",
+                                        label="Aku ada Saran/Kritik",
                                         uri="https://docs.google.com/forms/d/e/1FAIpQLSdEwalIGsDaXrWN1VoGOwKYO3tT16yc89eLEBR37kwPt1oIZw/viewform?usp=dialog"
                                     ),
                                     margin="md"
