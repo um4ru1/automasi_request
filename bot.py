@@ -42,6 +42,11 @@ def callback():
 def handle_message(event):
     user_message = event.message.text.strip().lower()
 
+from linebot.models import (
+    FlexSendMessage, BubbleContainer, BoxComponent,
+    TextComponent, ButtonComponent, URIAction
+)
+
     if user_message == "minfopub":
         flex_message = FlexSendMessage(
             alt_text="Minfo Publikasi",
@@ -56,12 +61,13 @@ def handle_message(event):
                             size="md",
                             wrap=True
                         ),
-                        TextComponent(
-                            text="https://tr.ee/KalenderRoseline",
-                            size="sm",
-                            color="#0000EE",
-                            wrap=True,
-                            margin="xs"
+                        ButtonComponent(
+                            style="link",
+                            height="sm",
+                            action=URIAction(
+                                label="Buka Kalender",
+                                uri="https://tr.ee/KalenderRoseline"
+                            )
                         ),
                         TextComponent(
                             text="Form Pemesanan Jadwal Publikasi Grup Line:",
@@ -70,12 +76,13 @@ def handle_message(event):
                             wrap=True,
                             margin="md"
                         ),
-                        TextComponent(
-                            text="https://tr.ee/FormPesanBcLINE",
-                            size="sm",
-                            color="#0000EE",
-                            wrap=True,
-                            margin="xs"
+                        ButtonComponent(
+                            style="link",
+                            height="sm",
+                            action=URIAction(
+                                label="Isi Form Pemesanan",
+                                uri="https://tr.ee/FormPesanBcLINE"
+                            )
                         ),
                         TextComponent(
                             text="Form Penghapusan Jadwal Publikasi Grup Line:",
@@ -84,18 +91,20 @@ def handle_message(event):
                             wrap=True,
                             margin="md"
                         ),
-                        TextComponent(
-                            text="https://tr.ee/FormHapusBcLINE",
-                            size="sm",
-                            color="#0000EE",
-                            wrap=True,
-                            margin="xs"
+                        ButtonComponent(
+                            style="link",
+                            height="sm",
+                            action=URIAction(
+                                label="Isi Form Penghapusan",
+                                uri="https://tr.ee/FormHapusBcLINE"
+                            )
                         ),
                     ]
                 )
             )
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
+
 
     elif user_message == "ai":
         flex_message = FlexSendMessage(
