@@ -42,7 +42,7 @@ def callback():
 def handle_message(event):
     user_message = event.message.text.strip().lower()
 
-    if user_message == "melati2":
+    if user_message == "minfopub":
         reply_text = (
             "GOOGLE CALENDAR:\n"
             "https://tr.ee/KalenderRoseline\n\n"
@@ -209,62 +209,100 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, flex_message)
 
     else:
-        # Keyword tidak ditemukan
         flex_message = FlexSendMessage(
             alt_text="Keyword tidak ditemukan",
             contents=BubbleContainer(
                 body=BoxComponent(
-                    layout='vertical',
-                    spacing='md',
+                    layout="vertical",
+                    spacing="md",
                     contents=[
                         BoxComponent(
-                            layout='vertical',
-                            background_color='#D0E8FF',
-                            padding_all='12px',
-                            corner_radius='md',
+                            layout="horizontal",
+                            background_color="#D0E8FF",
+                            padding_all="10px",
+                            corner_radius="md",
                             contents=[
                                 TextComponent(
-                                    text='keywordmu ga ketemu :(',
-                                    weight='bold',
-                                    size='lg',
-                                    color='#1C398E',
-                                    align='center'
+                                    text="keywordmu\n tidak ditemukan :(",
+                                    wrap=True,
+                                    weight="bold",
+                                    size="xl",
+                                    color="#1C398E",
+                                    align="center"
                                 )
                             ]
                         ),
                         SeparatorComponent(),
                         BoxComponent(
-                            layout='vertical',
-                            background_color='#D0E8FF',
-                            padding_all='10px',
-                            corner_radius='md',
+                            layout="vertical",
+                            background_color="#D0E8FF",
+                            padding_all="10px",
+                            corner_radius="md",
                             contents=[
                                 TextComponent(
-                                    text='Berikut adalah daftar keyword yang tersedia:',
-                                    size='sm',
-                                    weight='bold',
-                                    color='#1C398E',
-                                    wrap=True
+                                    text="Daftar Keyword Tersedia",
+                                    size="lg",
+                                    weight="bold",
+                                    color="#000000",
+                                    wrap=True,
+                                    margin="sm"
                                 ),
-                                TextComponent(text='ai ⟶ Homepage atmosinfo', size='sm', wrap=True),
-                                TextComponent(text='minfopub ⟶ request publikasi grup line', size='sm', wrap=True),
-                                TextComponent(text='minfodes ⟶ request desain grup line', size='sm', wrap=True),
+                                TextComponent(
+                                    text="Keyword Utama",
+                                    size="md",
+                                    weight="bold",
+                                    color="#000000",
+                                    wrap=True,
+                                    margin="lg"
+                                ),
+                                TextComponent(
+                                    text="ai",
+                                    size="sm",
+                                    wrap=True,
+                                    weight="bold"
+                                ),
+                                TextComponent(
+                                    text="Homepage atmosinfo, berisi Arsipin, Mengenal BP25, Mengenal Atmosinfo, dan Form Saran Kritik",
+                                    size="xs",
+                                    wrap=True,
+                                    margin="xs"
+                                ),
+                                TextComponent(
+                                    text="Form Request",
+                                    size="sm",
+                                    weight="bold",
+                                    color="#000000",
+                                    wrap=True,
+                                    margin="lg"
+                                ),
+                                TextComponent(
+                                    text="minfopub",
+                                    size="sm",
+                                    wrap=True,
+                                    weight="bold"
+                                ),
+                                TextComponent(
+                                    text="request publikasi grup line",
+                                    size="xs",
+                                    wrap=True,
+                                    margin="xs"
+                                ),
                             ]
                         ),
                         SeparatorComponent(),
                         TextComponent(
-                            text='Silakan ketik salah satu keyword di atas untuk melihat informasinya.',
-                            size='xs',
-                            color='#888888',
+                            text="Silakan ketik salah satu keyword di atas untuk melihat informasinya.",
+                            size="xxs",
+                            color="#888888",
                             wrap=True,
-                            margin='md'
+                            margin="md"
                         )
                     ]
                 )
             )
         )
+        
         line_bot_api.reply_message(event.reply_token, flex_message)
-
 
 @app.route("/notify", methods=["GET", "POST"])
 def notify_admin():
