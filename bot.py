@@ -159,13 +159,13 @@ https://tr.ee/FormHapusBcLINE
                             spacing="sm",
                             contents=[
                                 TextComponent(
-                                    text="MENGENAL ATMOSINFO",
+                                    text="MENGENALKU",
                                     weight="bold",
                                     size="md",
                                     color="#000000"
                                 ),
                                 TextComponent(
-                                    text="Deskripsi ATMOSINFO selengkapnya disini:",
+                                    text="Deskripsi diriku selengkapnya disini:",
                                     size="xs",
                                     wrap=True
                                 ),
@@ -174,7 +174,7 @@ https://tr.ee/FormHapusBcLINE
                                     height="sm",
                                     color="#1C398E",
                                     action=URIAction(
-                                        label="Lihat ATMOSINFO",
+                                        label=":)",
                                         uri="https://docs.google.com/document/d/1sISZQncRWjkxGBrkwovLo3i-mMC_EOp5BB2skRDVUlM/edit?tab=t.0"
                                     ),
                                     margin="md"
