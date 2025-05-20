@@ -1,16 +1,13 @@
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
-import textwrap
-import os
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage, FlexSendMessage,
-    BubbleContainer, BoxComponent, TextComponent, ButtonComponent,
-    SeparatorComponent
+    MessageEvent, TextMessage, TextSendMessage, FlexSendMessage, 
+    BubbleContainer, BoxComponent, TextComponent, ButtonComponent, SeparatorComponent,
+    ImageComponent
 )
 from linebot.models.actions import URIAction
-
+import os
 
 app = Flask(__name__)
 
@@ -40,25 +37,20 @@ def callback():
 
     return 'OK'
 
-from linebot.models import (
-    FlexSendMessage, BubbleContainer, ImageComponent, BoxComponent,
-    TextComponent, ButtonComponent, URIAction
-)
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_message = event.message.text.strip().lower()
 
     if user_message == "melati2":
-        reply_text = """GOOGLE CALENDAR:
-https://tr.ee/KalenderRoseline
-
-Form Pemesanan Jadwal Publikasi Grup Line:
-https://tr.ee/FormPesanBcLINE
-
-Form Penghapusan Jadwal Publikasi Grup Line:
-https://tr.ee/FormHapusBcLINE
-"""
+        reply_text = (
+            "GOOGLE CALENDAR:\n"
+            "https://tr.ee/KalenderRoseline\n\n"
+            "Form Pemesanan Jadwal Publikasi Grup Line:\n"
+            "https://tr.ee/FormPesanBcLINE\n\n"
+            "Form Penghapusan Jadwal Publikasi Grup Line:\n"
+            "https://tr.ee/FormHapusBcLINE\n"
+        )
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
     elif user_message == "ai":
@@ -216,65 +208,63 @@ https://tr.ee/FormHapusBcLINE
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-else:
-    flex_message = FlexSendMessage(
-        alt_text="Keyword tidak ditemukan",
-        contents=BubbleContainer(
-            body=BoxComponent(
-                layout='vertical',
-                spacing='md',
-                contents=[
-                    BoxComponent(
-                        layout='vertical',
-                        background_color='#D0E8FF',
-                        padding_all='12px',
-                        corner_radius='md',
-                        contents=[
-                            TextComponent(
-                                text='keywordmu ga ketemu :(',
-                                weight='bold',
-                                size='lg',
-                                color='#1C398E',
-                                align='center'
-                            )
-                        ]
-                    ),
-                    SeparatorComponent(),
-                    BoxComponent(
-                        layout='vertical',
-                        background_color='#D0E8FF',
-                        padding_all='10px',
-                        corner_radius='md',
-                        contents=[
-                            TextComponent(
-                                text='Berikut adalah daftar keyword yang tersedia:',
-                                size='sm',
-                                weight='bold',
-                                color='#1C398E',
-                                wrap=True
-                            ),
-                            TextComponent(text='ai            ⟶ Homepage atmosinfo', size='sm', wrap=True),
-                            TextComponent(text='minfopub         ⟶ request publikasi grup line', size='sm', wrap=True),
-                            TextComponent(text='minfodes         ⟶ request desain grup line', size='sm', wrap=True),
-                        ]
-                    ),
-                    SeparatorComponent(),
-                    TextComponent(
-                        text='Silakan ketik salah satu keyword di atas untuk melihat informasinya.',
-                        size='xs',
-                        color='#888888',
-                        wrap=True,
-                        margin='md'
-                    )
-                ]
+    else:
+        # Keyword tidak ditemukan
+        flex_message = FlexSendMessage(
+            alt_text="Keyword tidak ditemukan",
+            contents=BubbleContainer(
+                body=BoxComponent(
+                    layout='vertical',
+                    spacing='md',
+                    contents=[
+                        BoxComponent(
+                            layout='vertical',
+                            background_color='#D0E8FF',
+                            padding_all='12px',
+                            corner_radius='md',
+                            contents=[
+                                TextComponent(
+                                    text='keywordmu ga ketemu :(',
+                                    weight='bold',
+                                    size='lg',
+                                    color='#1C398E',
+                                    align='center'
+                                )
+                            ]
+                        ),
+                        SeparatorComponent(),
+                        BoxComponent(
+                            layout='vertical',
+                            background_color='#D0E8FF',
+                            padding_all='10px',
+                            corner_radius='md',
+                            contents=[
+                                TextComponent(
+                                    text='Berikut adalah daftar keyword yang tersedia:',
+                                    size='sm',
+                                    weight='bold',
+                                    color='#1C398E',
+                                    wrap=True
+                                ),
+                                TextComponent(text='ai            ⟶ Homepage atmosinfo', size='sm', wrap=True),
+                                TextComponent(text='minfopub         ⟶ request publikasi grup line', size='sm', wrap=True),
+                                TextComponent(text='minfodes         ⟶ request desain grup line', size='sm', wrap=True),
+                            ]
+                        ),
+                        SeparatorComponent(),
+                        TextComponent(
+                            text='Silakan ketik salah satu keyword di atas untuk melihat informasinya.',
+                            size='xs',
+                            color='#888888',
+                            wrap=True,
+                            margin='md'
+                        )
+                    ]
+                )
             )
         )
-    )
-    line_bot_api.reply_message(event.reply_token, flex_message)
+        line_bot_api.reply_message(event.reply_token, flex_message)
 
-
-if __name__ == "__main__":
-    app.run(port=8000)
 
 @app.route("/notify", methods=["GET", "POST"])
 def notify_admin():
@@ -287,7 +277,7 @@ def notify_admin():
     message_text = data.get("message", "📥 Ada request baru.")
 
     user_ids = [
-        "U0e62a4a9406a1a35f4573665d5794bc7"
+        "U0e62a4a9406a1a35f4573665d5794bc7"  # Ganti dengan user ID tujuan
     ]
 
     try:
@@ -299,4 +289,5 @@ def notify_admin():
         return f"❌ Gagal kirim notifikasi: {str(e)}", 500
 
 
-
+if __name__ == "__main__":
+    app.run(port=8000)
