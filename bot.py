@@ -6,9 +6,11 @@ import textwrap
 import os
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage, FlexSendMessage,
-    BubbleContainer, BoxComponent, TextComponent, ButtonComponent
+    BubbleContainer, BoxComponent, TextComponent, ButtonComponent,
+    SeparatorComponent
 )
 from linebot.models.actions import URIAction
+
 
 app = Flask(__name__)
 
@@ -59,7 +61,7 @@ https://tr.ee/FormHapusBcLINE
 """
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
-    elif user_message == "ai:
+    elif user_message == "ai":
         flex_message = FlexSendMessage(
             alt_text="ATMOSINFO",
             contents=BubbleContainer(
