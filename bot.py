@@ -59,10 +59,7 @@ https://tr.ee/FormHapusBcLINE
 """
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
-    elif user_message == "rose1":
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="fdsafasdfa"))
-
-    else:
+    elif user_message == "ai:
         flex_message = FlexSendMessage(
             alt_text="ATMOSINFO",
             contents=BubbleContainer(
@@ -216,6 +213,60 @@ https://tr.ee/FormHapusBcLINE
             )
         )
         line_bot_api.reply_message(event.reply_token, flex_message)
+
+    else:
+        flex_message = BubbleContainer(
+            body=BoxComponent(
+                layout='vertical',
+                spacing='md',
+                contents=[
+                    BoxComponent(
+                        layout='vertical',
+                        background_color='#D0E8FF',
+                        padding_all='12px',
+                        corner_radius='md',
+                        contents=[
+                            TextComponent(
+                                text='keywordmu ga ketemu :(',
+                                weight='bold',
+                                size='lg',
+                                color='#1C398E',
+                                align='center'
+                            )
+                        ]
+                    ),
+                    SeparatorComponent(),
+                    BoxComponent(
+                        layout='vertical',
+                        background_color='#D0E8FF',
+                        padding_all='10px',
+                        corner_radius='md',
+                        contents=[
+                            TextComponent(
+                                text='Berikut adalah daftar keyword yang tersedia:',
+                                size='sm',
+                                weight='bold',
+                                color='#1C398E',
+                                wrap=True
+                            ),
+                            TextComponent(text='ai            ⟶ Homepage atmosinfo', size='sm', wrap=True),
+                            TextComponent(text='minfopub         ⟶ request publikasi grup line', size='sm', wrap=True),
+                            TextComponent(text='minfodes         ⟶ request desain grup line', size='sm', wrap=True),
+                        ]
+                    ),
+                    SeparatorComponent(),
+                    TextComponent(
+                        text='Silakan ketik salah satu keyword di atas untuk melihat informasinya.',
+                        size='xs',
+                        color='#888888',
+                        wrap=True,
+                        margin='md'
+                    )
+                ]
+            )
+        )
+        line_bot_api.reply_message(event.reply_token, flex_message)
+
 
 if __name__ == "__main__":
     app.run(port=8000)
