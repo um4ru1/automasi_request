@@ -43,12 +43,6 @@ def handle_message(event):
     user_message = event.message.text.strip().lower()
 
     if user_message == "minfopub":
-from linebot.models import (
-    FlexSendMessage, BubbleContainer, BoxComponent,
-    TextComponent, SeparatorComponent
-)
-
-    if keyword == "minfopub":
         flex_message = FlexSendMessage(
             alt_text="Minfo Publikasi",
             contents=BubbleContainer(
