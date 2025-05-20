@@ -4,6 +4,11 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import textwrap
 import os
+from linebot.models import (
+    MessageEvent, TextMessage, TextSendMessage, FlexSendMessage,
+    BubbleContainer, BoxComponent, TextComponent, ButtonComponent
+)
+from linebot.models.actions import URIAction
 
 app = Flask(__name__)
 
@@ -35,9 +40,8 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    user_message = event.message.text.strip().lower()  # Ambil teks dan ubah ke huruf kecil
+    user_message = event.message.text.strip().lower()
 
-    # Cek input dari user dan berikan balasan yang sesuai
     if user_message == "melati2":
         reply_text = """GOOGLE CALENDAR:
 https://tr.ee/KalenderRoseline
@@ -48,40 +52,60 @@ https://tr.ee/FormPesanBcLINE
 Form Penghapusan Jadwal Publikasi Grup Line:
 https://tr.ee/FormHapusBcLINE
 """
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
+
     elif user_message == "rose1":
-        reply_text = "fdsafasdfa"
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="fdsafasdfa"))
+
     else:
-        reply_text = textwrap.dedent("""\
-            SOP BP HMME "ATMOSPHAIRA" 2025/2026
-            yang tersedia sementara: melati2
-           
-            rose1 = SOP Biro Kesekjenan
-            rose2 = SOP Departemen Advokasi Keilmuan
-            rose3 = SOP Departemen Medkom
-            rose4 = SOP Departemen PSDA
-            rose5 = SOP Departemen Eksternal
-            rose6 = SOP Departemen Internal
+        flex_message = FlexSendMessage(
+            alt_text="Info Umum Atmosphaira",
+            contents=BubbleContainer(
+                body=BoxComponent(
+                    layout="vertical",
+                    contents=[
+                        TextComponent(text="📚 ATMOSINFO", weight="bold", size="md"),
+                        ButtonComponent(
+                            style="link",
+                            height="sm",
+                            action=URIAction(
+                                label="Lihat Dokumen",
+                                uri="https://docs.google.com/document/d/1sISZQncRWjkxGBrkwovLo3i-mMC_EOp5BB2skRDVUlM/edit?tab=t.0"
+                            )
+                        ),
+                        TextComponent(text="📁 ARSIPIN", weight="bold", size="md", margin="md"),
+                        TextComponent(
+                            text="Media Sosial HMME, Arsip, SOP, Form Pemesanan, Kalender",
+                            size="sm", wrap=True
+                        ),
+                        ButtonComponent(
+                            style="link",
+                            height="sm",
+                            action=URIAction(
+                                label="Buka Arsipin",
+                                uri="https://linktr.ee/ARSIPIN"
+                            )
+                        ),
+                        TextComponent(text="🧭 Mengenal BP25", weight="bold", size="md", margin="md"),
+                        ButtonComponent(
+                            style="link",
+                            height="sm",
+                            action=URIAction(
+                                label="Lihat Profil BP25",
+                                uri="https://docs.google.com/document/d/1Q0vEWOAFjFtfU1hx-SiTuN1ttSCUn8MtC5IlZC53WuA/edit?tab=t.0"
+                            )
+                        ),
+                        TextComponent(text="📅 Kalender Pusat", weight="bold", size="md", margin="md"),
+                        TextComponent(
+                            text="ID Kalender:\nc_aee5d5c10e1ea4f22ce9252b92b378a948f2b43cd03000c3d3c7c1afe1d203ff@group.calendar.google.com",
+                            size="sm", wrap=True
+                        ),
+                    ]
+                )
+            )
+        )
 
-            FORM REQUEST
-            melati1 = Pengajuan Agenda
-            melati2 = Roseline(Publikasi grup line)
-            melati3 = Rosepub(Media Atmos, publikasi ig, tiktok dkk)
-            melati4 = Rosemading(mading atmos offline)
-            melati5 = Rosedesain(Pemesanan Desain)
-            melati6 = Pengajuan SKA
-            melati7 = Permohonan bimbingan lomba
-            melati8 = kian(kepoin alumni)
-            melati9 = kunjungan bareng atmosphaira
-                 
-            KALENDER
-            kal1 = KalenderRoseline
-            kal2 = Kalendermelati
-            
-            """)
-
-    # Kirim balasan ke user
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
-
+        line_bot_api.reply_message(event.reply_token, flex_message)
 if __name__ == "__main__":
     app.run(port=8000)
 
