@@ -41,12 +41,7 @@ def callback():
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_message = event.message.text.strip().lower()
-
-from linebot.models import (
-    FlexSendMessage, BubbleContainer, BoxComponent,
-    TextComponent, ButtonComponent, URIAction
-)
-
+    
     if user_message == "minfopub":
         flex_message = FlexSendMessage(
             alt_text="Minfo Publikasi",
