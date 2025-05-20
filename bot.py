@@ -57,7 +57,7 @@ def handle_message(event):
                             wrap=True
                         ),
                         ButtonComponent(
-                            style="Primary",
+                            style="primary",
                             color="#1C398E",
                             height="sm",
                             action=URIAction(
@@ -73,7 +73,7 @@ def handle_message(event):
                             margin="md"
                         ),
                         ButtonComponent(
-                            style="Primary",
+                            style="primary",
                             color="#1C398E",
                             height="sm",
                             action=URIAction(
@@ -89,7 +89,7 @@ def handle_message(event):
                             margin="md"
                         ),
                         ButtonComponent(
-                            style="Primary",
+                            style="primary",
                             color="#1C398E",
                             height="sm",
                             action=URIAction(
