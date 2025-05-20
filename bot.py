@@ -57,7 +57,8 @@ def handle_message(event):
                             wrap=True
                         ),
                         ButtonComponent(
-                            style="link",
+                            style="Primary",
+                            color="#1C398E",
                             height="sm",
                             action=URIAction(
                                 label="Buka Kalender",
@@ -72,7 +73,8 @@ def handle_message(event):
                             margin="md"
                         ),
                         ButtonComponent(
-                            style="link",
+                            style="Primary",
+                            color="#1C398E",
                             height="sm",
                             action=URIAction(
                                 label="Isi Form Pemesanan",
@@ -87,7 +89,8 @@ def handle_message(event):
                             margin="md"
                         ),
                         ButtonComponent(
-                            style="link",
+                            style="Primary",
+                            color="#1C398E",
                             height="sm",
                             action=URIAction(
                                 label="Isi Form Penghapusan",
