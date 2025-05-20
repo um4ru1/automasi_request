@@ -74,7 +74,7 @@ def handle_message(event):
                             padding_all="12px",
                             contents=[
                                 TextComponent(
-                                    text="ATMOSINFO",
+                                    text="Atmosinfo",
                                     weight="bold",
                                     size="lg",
                                     align="center",
@@ -150,13 +150,13 @@ def handle_message(event):
                             spacing="sm",
                             contents=[
                                 TextComponent(
-                                    text="MENGENALKU",
+                                    text="ATMOSINFO",
                                     weight="bold",
                                     size="md",
                                     color="#000000"
                                 ),
                                 TextComponent(
-                                    text="Deskripsi diriku selengkapnya disini:",
+                                    text="Deskripsi Atmosinfo selengkapnya disini:",
                                     size="xs",
                                     wrap=True
                                 ),
@@ -180,13 +180,13 @@ def handle_message(event):
                             spacing="sm",
                             contents=[
                                 TextComponent(
-                                    text="KALENDER PUSAT",
+                                    text="SARAN DAN KRITIK",
                                     weight="bold",
                                     size="md",
                                     color="#000000"
                                 ),
                                 TextComponent(
-                                    text="Intip Timeline Publikasi Grup Line dibawah:",
+                                    text="Tuangkan saran dan kritikmu untuk Atmosinfo melalui Google Form dibawah:",
                                     size="xs",
                                     wrap=True
                                 ),
@@ -195,8 +195,8 @@ def handle_message(event):
                                     height="sm",
                                     color="#1C398E",
                                     action=URIAction(
-                                        label="Lihat Kalender",
-                                        uri="https://calendar.google.com/calendar/embed?src=c_aee5d5c10e1ea4f22ce9252b92b378a948f2b43cd03000c3d3c7c1afe1d203ff%40group.calendar.google.com&ctz=Asia%2FJakarta"
+                                        label="Aku ada saran/kritik",
+                                        uri="https://docs.google.com/forms/d/e/1FAIpQLSdEwalIGsDaXrWN1VoGOwKYO3tT16yc89eLEBR37kwPt1oIZw/viewform?usp=dialog"
                                     ),
                                     margin="md"
                                 )
@@ -246,9 +246,9 @@ def handle_message(event):
                                     color='#1C398E',
                                     wrap=True
                                 ),
-                                TextComponent(text='ai            ⟶ Homepage atmosinfo', size='sm', wrap=True),
-                                TextComponent(text='minfopub         ⟶ request publikasi grup line', size='sm', wrap=True),
-                                TextComponent(text='minfodes         ⟶ request desain grup line', size='sm', wrap=True),
+                                TextComponent(text='ai ⟶ Homepage atmosinfo', size='sm', wrap=True),
+                                TextComponent(text='minfopub ⟶ request publikasi grup line', size='sm', wrap=True),
+                                TextComponent(text='minfodes ⟶ request desain grup line', size='sm', wrap=True),
                             ]
                         ),
                         SeparatorComponent(),
