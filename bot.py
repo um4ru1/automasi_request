@@ -38,6 +38,11 @@ def callback():
 
     return 'OK'
 
+from linebot.models import (
+    FlexSendMessage, BubbleContainer, ImageComponent, BoxComponent,
+    TextComponent, ButtonComponent, URIAction
+)
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_message = event.message.text.strip().lower()
@@ -61,55 +66,157 @@ https://tr.ee/FormHapusBcLINE
         flex_message = FlexSendMessage(
             alt_text="Info Umum Atmosphaira",
             contents=BubbleContainer(
+                hero=ImageComponent(
+                    url="https://i.imgur.com/U9BFVFe.jpeg",
+                    size="full",
+                    aspect_ratio="20:13",
+                    aspect_mode="cover"
+                ),
                 body=BoxComponent(
                     layout="vertical",
+                    spacing="md",
                     contents=[
-                        TextComponent(text="📚 ATMOSINFO", weight="bold", size="md"),
-                        ButtonComponent(
-                            style="link",
-                            height="sm",
-                            action=URIAction(
-                                label="Lihat Dokumen",
-                                uri="https://docs.google.com/document/d/1sISZQncRWjkxGBrkwovLo3i-mMC_EOp5BB2skRDVUlM/edit?tab=t.0"
-                            )
+                        BoxComponent(
+                            layout="vertical",
+                            background_color="#DBEAFE",
+                            corner_radius="md",
+                            padding_all="12px",
+                            contents=[
+                                TextComponent(
+                                    text="ATMOSINFO",
+                                    weight="bold",
+                                    size="lg",
+                                    align="center",
+                                    color="#000000"
+                                )
+                            ]
                         ),
-                        TextComponent(text="📁 ARSIPIN", weight="bold", size="md", margin="md"),
-                        TextComponent(
-                            text="Media Sosial HMME, Arsip, SOP, Form Pemesanan, Kalender",
-                            size="sm", wrap=True
+                        BoxComponent(
+                            layout="vertical",
+                            background_color="#DBEAFE",
+                            corner_radius="md",
+                            padding_all="12px",
+                            spacing="sm",
+                            contents=[
+                                TextComponent(
+                                    text="ARSIPIN",
+                                    weight="bold",
+                                    size="md",
+                                    color="#000000"
+                                ),
+                                TextComponent(
+                                    text="Link pusat yang berisi Media Sosial HMME, Arsip pusat, SOP, Form Pemesanan, dan Kalender",
+                                    size="xs",
+                                    wrap=True
+                                ),
+                                ButtonComponent(
+                                    style="primary",
+                                    height="sm",
+                                    color="#1C398E",
+                                    action=URIAction(
+                                        label="Buka Arsipin",
+                                        uri="https://linktr.ee/ARSIPIN"
+                                    ),
+                                    margin="md"
+                                )
+                            ]
                         ),
-                        ButtonComponent(
-                            style="link",
-                            height="sm",
-                            action=URIAction(
-                                label="Buka Arsipin",
-                                uri="https://linktr.ee/ARSIPIN"
-                            )
+                        BoxComponent(
+                            layout="vertical",
+                            background_color="#DBEAFE",
+                            corner_radius="md",
+                            padding_all="12px",
+                            spacing="sm",
+                            contents=[
+                                TextComponent(
+                                    text="MENGENAL BP25",
+                                    weight="bold",
+                                    size="md",
+                                    color="#000000"
+                                ),
+                                TextComponent(
+                                    text="Cek Deskripsi Badan Pengurus HMME 'Atmosphaira' ITB 2025",
+                                    size="xs",
+                                    wrap=True
+                                ),
+                                ButtonComponent(
+                                    style="primary",
+                                    height="sm",
+                                    color="#1C398E",
+                                    action=URIAction(
+                                        label="Lihat Profil BP25",
+                                        uri="https://docs.google.com/document/d/1Q0vEWOAFjFtfU1hx-SiTuN1ttSCUn8MtC5IlZC53WuA/edit?tab=t.0"
+                                    ),
+                                    margin="md"
+                                )
+                            ]
                         ),
-                        TextComponent(text="🧭 Mengenal BP25", weight="bold", size="md", margin="md"),
-                        ButtonComponent(
-                            style="link",
-                            height="sm",
-                            action=URIAction(
-                                label="Lihat Profil BP25",
-                                uri="https://docs.google.com/document/d/1Q0vEWOAFjFtfU1hx-SiTuN1ttSCUn8MtC5IlZC53WuA/edit?tab=t.0"
-                            )
+                        BoxComponent(
+                            layout="vertical",
+                            background_color="#DBEAFE",
+                            corner_radius="md",
+                            padding_all="12px",
+                            spacing="sm",
+                            contents=[
+                                TextComponent(
+                                    text="MENGENAL ATMOSINFO",
+                                    weight="bold",
+                                    size="md",
+                                    color="#000000"
+                                ),
+                                TextComponent(
+                                    text="Deskripsi ATMOSINFO selengkapnya disini:",
+                                    size="xs",
+                                    wrap=True
+                                ),
+                                ButtonComponent(
+                                    style="primary",
+                                    height="sm",
+                                    color="#1C398E",
+                                    action=URIAction(
+                                        label="Lihat ATMOSINFO",
+                                        uri="https://docs.google.com/document/d/1sISZQncRWjkxGBrkwovLo3i-mMC_EOp5BB2skRDVUlM/edit?tab=t.0"
+                                    ),
+                                    margin="md"
+                                )
+                            ]
                         ),
-                        TextComponent(text="📅 Kalender Pusat", weight="bold", size="md", margin="md"),
-                        ButtonComponent(
-                            style="link",
-                            height="sm",
-                            action=URIAction(
-                                label="Lihat Kalender BP25",
-                                uri="https://calendar.google.com/calendar/embed?src=c_aee5d5c10e1ea4f22ce9252b92b378a948f2b43cd03000c3d3c7c1afe1d203ff%40group.calendar.google.com&ctz=Asia%2FJakarta"
-                            )
-                        ),
+                        BoxComponent(
+                            layout="vertical",
+                            background_color="#DBEAFE",
+                            corner_radius="md",
+                            padding_all="12px",
+                            spacing="sm",
+                            contents=[
+                                TextComponent(
+                                    text="KALENDER PUSAT",
+                                    weight="bold",
+                                    size="md",
+                                    color="#000000"
+                                ),
+                                TextComponent(
+                                    text="Intip Timeline Publikasi Grup Line dibawah:",
+                                    size="xs",
+                                    wrap=True
+                                ),
+                                ButtonComponent(
+                                    style="primary",
+                                    height="sm",
+                                    color="#1C398E",
+                                    action=URIAction(
+                                        label="Lihat Kalender",
+                                        uri="https://calendar.google.com/calendar/embed?src=c_aee5d5c10e1ea4f22ce9252b92b378a948f2b43cd03000c3d3c7c1afe1d203ff%40group.calendar.google.com&ctz=Asia%2FJakarta"
+                                    ),
+                                    margin="md"
+                                )
+                            ]
+                        )
                     ]
                 )
             )
         )
-
         line_bot_api.reply_message(event.reply_token, flex_message)
+
 if __name__ == "__main__":
     app.run(port=8000)
 
