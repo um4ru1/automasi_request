@@ -67,7 +67,7 @@ https://tr.ee/FormHapusBcLINE
             alt_text="Info Umum Atmosphaira",
             contents=BubbleContainer(
                 hero=ImageComponent(
-                    url="https://i.imgur.com/YqJwxt4.jpeg",
+                    url="https://i.imgur.com/9HUCGEa.jpeg",
                     size="full",
                     aspect_ratio="20:13",
                     aspect_mode="cover"
