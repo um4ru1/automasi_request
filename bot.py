@@ -42,7 +42,7 @@ def callback():
 def handle_message(event):
     user_message = event.message.text.strip().lower()
     
-    if user_message == "minfopub":
+    if user_message == "mpub":
         flex_message = FlexSendMessage(
             alt_text="Minfo Publikasi",
             contents=BubbleContainer(
@@ -51,7 +51,7 @@ def handle_message(event):
                     spacing='md',
                     contents=[
                         TextComponent(
-                            text="Kalender BP25",
+                            text="Kalender Atmosinfo",
                             weight="bold",
                             size="md",
                             wrap=True
@@ -62,7 +62,7 @@ def handle_message(event):
                             height="sm",
                             action=URIAction(
                                 label="Buka Kalender",
-                                uri="https://tr.ee/KalenderRoseline"
+                                uri="https://calendar.google.com/calendar/u/0?cid=Y182ODc2M2U2YTI3ZGZhMTY5NDNlMTBmOGIxZjY0OGI4N2E4ZDNhNWRmOTFjMmEzYzlmYzBhM2JiOGM5MWNlZTVkQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20"
                             )
                         ),
                         TextComponent(
@@ -106,7 +106,7 @@ def handle_message(event):
 
     elif user_message == "ai":
         flex_message = FlexSendMessage(
-            alt_text="ATMOSINFO",
+            alt_text="Homepage",
             contents=BubbleContainer(
                 hero=ImageComponent(
                     url="https://i.imgur.com/9HUCGEa.jpeg",
@@ -187,7 +187,7 @@ def handle_message(event):
                                     color="#1C398E",
                                     action=URIAction(
                                         label="Lihat Profil BP25",
-                                        uri="https://docs.google.com/document/d/1Q0vEWOAFjFtfU1hx-SiTuN1ttSCUn8MtC5IlZC53WuA/edit?tab=t.0"
+                                        uri="https://docs.google.com/document/d/1IKzUd2L9vxNCgf-wdOlgigIK_J_GXpgttLxnicck228/edit?usp=sharing"
                                     ),
                                     margin="md"
                                 )
@@ -217,7 +217,7 @@ def handle_message(event):
                                     color="#1C398E",
                                     action=URIAction(
                                         label="Lihat Deskripsi",
-                                        uri="https://docs.google.com/document/d/1sISZQncRWjkxGBrkwovLo3i-mMC_EOp5BB2skRDVUlM/edit?tab=t.0"
+                                        uri="https://docs.google.com/document/d/1GoUlTPfbiSPuU8QyGn0Rl9oE75cktOuSOhgzCJRy__s/edit?tab=t.0"
                                     ),
                                     margin="md"
                                 )
