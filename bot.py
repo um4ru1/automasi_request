@@ -141,7 +141,7 @@ def handle_message(event):
                             spacing="sm",
                             contents=[
                                 TextComponent(
-                                    text="ARSIPIN",
+                                    text="ARCHIPAIRA",
                                     weight="bold",
                                     size="md",
                                     color="#000000"
@@ -156,8 +156,8 @@ def handle_message(event):
                                     height="sm",
                                     color="#1C398E",
                                     action=URIAction(
-                                        label="Buka Arsipin",
-                                        uri="https://linktr.ee/ARSIPIN"
+                                        label="Buka ARCHIPAIRA",
+                                        uri="https://linktr.ee/ARCHIPHAIRA"
                                     ),
                                     margin="md"
                                 )
@@ -313,7 +313,7 @@ def handle_message(event):
                                     weight="bold"
                                 ),
                                 TextComponent(
-                                    text="Homepage atmosinfo, berisi Arsipin, Mengenal BP25, Mengenal Atmosinfo, dan Form Saran Kritik",
+                                    text="Homepage Atmosinfo, berisi Arsipin, Mengenal BP25, Mengenal Atmosinfo, dan Form Saran Kritik",
                                     size="xs",
                                     wrap=True,
                                     margin="xs"
@@ -327,7 +327,7 @@ def handle_message(event):
                                     margin="lg"
                                 ),
                                 TextComponent(
-                                    text="minfopub",
+                                    text="mpub",
                                     size="sm",
                                     wrap=True,
                                     weight="bold"
