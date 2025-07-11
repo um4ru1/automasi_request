@@ -361,40 +361,40 @@ def notify_admin():
     if not data:
         return "Data tidak valid.", 400
         
-    # Log data yang diterima untuk debugging
     print("--- 📥 Data POST Diterima ---")
     print(data)
     print("--------------------------")
 
     message_text = data.get("message")
-    specific_user_id = data.get("user_id") # Pastikan menggunakan kunci yang benar
+    # Mengambil data penerima dengan kunci 'recipient_id'
+    recipients = data.get("recipient_id") 
 
-
-    # --- Logika Penentuan Penerima --
-
-    # ⛔ GANTI: Daftar penerima default untuk notifikasi LAMA (publikasi)
-    # Ini adalah User A atau siapa pun yang menerima notifikasi publikasi.
-    # Anda bisa menambahkan lebih dari satu ID di sini.
+    # Daftar penerima default jika tidak ada yg spesifik
     default_recipients = ["U0e62a4a9406a1a35f4573665d5794bc7"]
 
-    # Tentukan siapa yang akan menjadi target akhir
+    # --- Logika Penentuan Penerima (Sudah Diperbarui) ---
     target_ids_to_notify = []
-    if specific_user_id:
-        # Jika ada user_id spesifik yang dikirim (dari notifikasi BARU)
-        target_ids_to_notify.append(specific_user_id)
-        print(f"🎯 Target spesifik ditemukan: {specific_user_id}")
+    if recipients:
+        # Jika ada data penerima spesifik yang dikirim
+        if isinstance(recipients, list):
+            # Jika data adalah sebuah list, gunakan langsung
+            target_ids_to_notify = recipients
+            print(f"🎯 Target spesifik (multiple) ditemukan: {recipients}")
+        else:
+            # Jika data adalah string (bukan list), jadikan list berisi satu item
+            target_ids_to_notify = [recipients]
+            print(f"🎯 Target spesifik (single) ditemukan: {recipients}")
     else:
-        # Jika tidak ada, gunakan daftar default (untuk notifikasi LAMA)
+        # Jika tidak ada, gunakan daftar default
         target_ids_to_notify = default_recipients
         print(f"🎯 Menggunakan target default: {default_recipients}")
 
-    # Pastikan ada pesan untuk dikirim
     if not message_text:
         print("❌ Gagal: 'message' tidak ditemukan dalam data.")
         return "❌ Gagal: 'message' tidak ditemukan.", 400
 
-    # Kirim pesan menggunakan multicast ke target yang sudah ditentukan
     try:
+        # Mengirim ke semua target yang sudah ditentukan
         line_bot_api.multicast(target_ids_to_notify, TextSendMessage(text=message_text))
         print(f"✅ Berhasil kirim multicast ke: {target_ids_to_notify}")
         return "✅ Notifikasi berhasil dikirim", 200
