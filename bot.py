@@ -357,17 +357,18 @@ def handle_message(event):
 
 @app.route("/notify", methods=["POST"])
 def notify_admin():
-    # Mengambil data JSON yang dikirim oleh Google Apps Script
     data = request.get_json()
     if not data:
         return "Data tidak valid.", 400
         
-    print("📥 Data POST diterima:", data)
+    # Log data yang diterima untuk debugging
+    print("--- 📥 Data POST Diterima ---")
+    print(data)
+    print("--------------------------")
 
-    # Mengambil isi pesan dan user_id spesifik dari data
-    # Jika 'user_id' tidak ada, nilainya akan menjadi None
     message_text = data.get("message")
-    specific_user_id = data.get("user_id")
+    specific_user_id = data.get("user_id") # Pastikan menggunakan kunci yang benar
+
 
     # --- Logika Penentuan Penerima --
 
