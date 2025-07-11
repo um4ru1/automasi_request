@@ -355,23 +355,47 @@ def handle_message(event):
         
         line_bot_api.reply_message(event.reply_token, flex_message)
 
-@app.route("/notify", methods=["GET", "POST"])
+@app.route("/notify", methods=["POST"])
 def notify_admin():
-    if request.method == "GET":
-        return "Gunakan metode POST untuk mengirim notifikasi.", 405
-
+    # Mengambil data JSON yang dikirim oleh Google Apps Script
     data = request.get_json()
+    if not data:
+        return "Data tidak valid.", 400
+        
     print("📥 Data POST diterima:", data)
 
-    message_text = data.get("message", "📥 Ada request baru.")
+    # Mengambil isi pesan dan user_id spesifik dari data
+    # Jika 'user_id' tidak ada, nilainya akan menjadi None
+    message_text = data.get("message")
+    specific_user_id = data.get("user_id")
 
-    user_ids = [
-        "U0e62a4a9406a1a35f4573665d5794bc7"  # Ganti dengan user ID tujuan
-    ]
+    # --- Logika Penentuan Penerima ---
 
+    # ⛔ GANTI: Daftar penerima default untuk notifikasi LAMA (publikasi)
+    # Ini adalah User A atau siapa pun yang menerima notifikasi publikasi.
+    # Anda bisa menambahkan lebih dari satu ID di sini.
+    default_recipients = ["U...ganti_dengan_ID_User_A..."]
+
+    # Tentukan siapa yang akan menjadi target akhir
+    target_ids_to_notify = []
+    if specific_user_id:
+        # Jika ada user_id spesifik yang dikirim (dari notifikasi BARU)
+        target_ids_to_notify.append(specific_user_id)
+        print(f"🎯 Target spesifik ditemukan: {specific_user_id}")
+    else:
+        # Jika tidak ada, gunakan daftar default (untuk notifikasi LAMA)
+        target_ids_to_notify = default_recipients
+        print(f"🎯 Menggunakan target default: {default_recipients}")
+
+    # Pastikan ada pesan untuk dikirim
+    if not message_text:
+        print("❌ Gagal: 'message' tidak ditemukan dalam data.")
+        return "❌ Gagal: 'message' tidak ditemukan.", 400
+
+    # Kirim pesan menggunakan multicast ke target yang sudah ditentukan
     try:
-        line_bot_api.multicast(user_ids, TextSendMessage(text=message_text))
-        print("✅ Berhasil kirim multicast!")
+        line_bot_api.multicast(target_ids_to_notify, TextSendMessage(text=message_text))
+        print(f"✅ Berhasil kirim multicast ke: {target_ids_to_notify}")
         return "✅ Notifikasi berhasil dikirim", 200
     except Exception as e:
         print(f"❌ Gagal kirim multicast: {str(e)}")
