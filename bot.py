@@ -374,7 +374,7 @@ def notify_admin():
     # ⛔ GANTI: Daftar penerima default untuk notifikasi LAMA (publikasi)
     # Ini adalah User A atau siapa pun yang menerima notifikasi publikasi.
     # Anda bisa menambahkan lebih dari satu ID di sini.
-    default_recipients = ["U...ganti_dengan_ID_User_A..."]
+    default_recipients = ["U0e62a4a9406a1a35f4573665d5794bc7"]
 
     # Tentukan siapa yang akan menjadi target akhir
     target_ids_to_notify = []
