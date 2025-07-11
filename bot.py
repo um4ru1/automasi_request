@@ -369,7 +369,7 @@ def notify_admin():
     message_text = data.get("message")
     specific_user_id = data.get("user_id")
 
-    # --- Logika Penentuan Penerima ---
+    # --- Logika Penentuan Penerima --
 
     # ⛔ GANTI: Daftar penerima default untuk notifikasi LAMA (publikasi)
     # Ini adalah User A atau siapa pun yang menerima notifikasi publikasi.
