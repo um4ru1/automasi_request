@@ -78,7 +78,7 @@ def handle_message(event):
                             height="sm",
                             action=URIAction(
                                 label="Isi Form Pemesanan",
-                                uri="https://tr.ee/FormPesanBcLINE"
+                                uri="https://tr.ee/Pemesanan_Publikasi_GrupLine"
                             )
                         ),
                         TextComponent(
