@@ -94,7 +94,7 @@ def handle_message(event):
                             height="sm",
                             action=URIAction(
                                 label="Isi Form Penghapusan",
-                                uri="https://tr.ee/FormHapusBcLINE"
+                                uri="https://tr.ee/Penghapusan_Publikasi_GrupLine"
                             )
                         ),
                     ]
