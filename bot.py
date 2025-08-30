@@ -62,7 +62,7 @@ def handle_message(event):
                             height="sm",
                             action=URIAction(
                                 label="Buka Kalender",
-                                uri="https://calendar.google.com/calendar/u/0?cid=Y182ODc2M2U2YTI3ZGZhMTY5NDNlMTBmOGIxZjY0OGI4N2E4ZDNhNWRmOTFjMmEzYzlmYzBhM2JiOGM5MWNlZTVkQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20"
+                                uri="https://tr.ee/KalenderAtmosInfo"
                             )
                         ),
                         TextComponent(
